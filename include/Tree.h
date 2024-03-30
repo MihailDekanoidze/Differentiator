@@ -2,9 +2,15 @@
 #define TREE_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#include <stdio.h>
 #include <assert.h>
 #include <limits.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 
@@ -26,7 +32,7 @@
 #define START_NODE_CHILD_PRINT(file, node, child)       fprintf(file, "\"%s\"", node->val);         \
                                                         node_dot_create(child, file)
 
-#define FOPEN(file_name, mode) fopen(file_name, mode); /*fprintf(stderr, "open: %s on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);*/ 
+#define FOPEN(file_name, mode) fopen(file_name, mode); fprintf(stderr, "open: %s on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);
 #define FCLOSE(file_name) int file_close = fclose(file_name); /*fprintf(stderr, "close: %s  on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);*/ \
     if (file_close != 0) {fprintf(stderr, "meow!!\n");}
 
@@ -43,17 +49,27 @@ enum Operation
     mul = 4
 };
 
-union node_data
+enum Function
 {
+    S = 1,
+    C = 2
+};
+
+typedef union node_data
+{
+    char var;
     Operation op;
     double number;
-};
+    Function func;
+} node_data; 
 
 
 enum Type
 {
     operation = 1,
-    number    = 2
+    number    = 2,
+    var       = 3,
+    func      = 4
 };
 
 
@@ -79,9 +95,10 @@ struct Tree {
 };
 
 Tree*               tree_create(size_t node_count);
-void                tree_print(Node* tree, FILE* tree_log, size_t* level);
+void                tree_print(const Node* tree, FILE* tree_log, size_t* level);
 Tree*               tree_increase_capasity(Tree* tree);
 void                tree_detor(Tree* tree);
+void                node_dtor(Node* node);
 
 Node*               tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void* arg);
 
@@ -89,7 +106,7 @@ void                node_list_print(Tree* main_tree);
 void                skip_spaces(char* source, size_t* pos);
 void                ClearBuffer(void);
 void                fprint_nchar(FILE* dest, char symbol, size_t count);
-char                get_oper_symbol(Node* tree);
+char                get_oper_symbol(Operation);
 
 //struct Stack*       way_stack(Tree* tree, char* val);
 //int                 way_search(Node* curr_node, double val, struct Stack* way_to_obj);

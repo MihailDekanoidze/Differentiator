@@ -8,6 +8,9 @@
 #include "../include/others.h"
 
 
+#define PRINT_ARG(curr_node) if(curr_node->data_type == number) printf(" %lg ", curr_node->val->number);         \
+                        else printf(" %c ", get_oper_symbol(curr_node->val->op))
+
 
 Tree* tree_create(size_t node_count)
 {
@@ -28,7 +31,7 @@ Tree* tree_create(size_t node_count)
     tree->node_list->right = NULL;
     tree->node_list->previous = NULL;
 
-    FILE* tree_log = FOPEN("tree_log.cpp", "w");
+    FILE* tree_log = FOPEN("tree_log.cpp", "w+");
     tree->tree_log = tree_log;
     
     return tree;
@@ -38,19 +41,21 @@ void node_list_print(Tree* tree)
 {
     for (size_t i = 0; i < tree->node_count; i++)
     {
-        printf("\nnode[%zu] = %s\n", i, (tree->node_list + i)->val);
+        printf("Node %zu has arg ", i);
+        PRINT_ARG((tree->node_list + i));
+        printf("\n");
     }
 }
 
 Tree* tree_increase_capasity(Tree* tree)
 {
-    printf("increase capacity!\n");
-    printf("old capacity = %zu\n", tree->capacity);
+    //printf("increase capacity!\n");
+    //printf("old capacity = %zu\n", tree->capacity);
 
     tree->node_list = (Node*)realloc(tree->node_list, sizeof(Node) * tree->capacity * TREE_NODE_INCREASE_COEF);
     tree->capacity *= TREE_NODE_INCREASE_COEF;
 
-    printf("new capacity = %zu\n", tree->capacity);
+    //printf("new capacity = %zu\n", tree->capacity);
 
     return tree; 
 }
@@ -59,7 +64,14 @@ void tree_detor(Tree* tree)
 {
     for (size_t i = 0; i < tree->node_count; i++)
     {
-        free(tree->node_list + i);
+        printf("Attempt to free node[%zu]\n", i);
+
+        printf("I plan to free a node_data to address %p, val is ",
+        &((tree->node_list + i)->val));
+        PRINT_ARG(((tree->node_list + i)));
+
+        free((tree->node_list + i)->val);
+        printf("Sucsess!\n");
     }
     
     free(tree->node_list);
@@ -72,7 +84,7 @@ void tree_detor(Tree* tree)
     free(tree);
 }
 
-void tree_print(Node* tree, FILE* tree_data, size_t* level)
+void tree_print(const Node* tree, FILE* tree_data, size_t* level)
 {
     //printf("I am in print \n");
 
@@ -82,6 +94,9 @@ void tree_print(Node* tree, FILE* tree_data, size_t* level)
 
     if(tree->left == NULL)
     {
+        printf("I plan to write a node_data to address %p, val is ", tree->val);
+        PRINT_ARG(tree);
+
         fprintf(tree_data, "%lg", tree->val->number);
         return;        
     }
@@ -93,7 +108,7 @@ void tree_print(Node* tree, FILE* tree_data, size_t* level)
 
     //fprint_nchar(tree_data, '\t', *level);
 
-    fprintf(tree_data, "%c", get_oper_symbol(tree));
+    fprintf(tree_data, "%c", get_oper_symbol(tree->val->op));
 
     tree_print(tree->right, tree_data, level);
 
@@ -249,9 +264,9 @@ void node_dot_create(Node* curr_node, FILE* tree_info)
     return;
 }*/
 
-char get_oper_symbol(Node* tree)
+char get_oper_symbol(Operation op)
 {
-    switch (tree->val->op)
+    switch (op)
     {
     case add:
         return '+';
@@ -263,8 +278,24 @@ char get_oper_symbol(Node* tree)
         return '/';
     case null_operator:
     default:
+        return '?';
         break;
     }
 
     return 0;
+}
+
+
+void node_dtor(Node* node)
+{
+    if (node == NULL) return;
+
+    free(node->val);
+
+    node_dtor(node->left);
+    node_dtor(node->right);
+
+    free(node);
+
+    return;
 }
