@@ -51,8 +51,9 @@ enum Operation
 
 enum Function
 {
-    S = 5,
-    C = 6
+    sin = 5,
+    cos = 6,
+    null_func = 7
 };
 
 typedef union node_data

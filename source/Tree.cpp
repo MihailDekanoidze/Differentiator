@@ -332,10 +332,10 @@ void print_func(Function func)
 {
     switch (func)
     {
-    case S:
+    case sin:
         printf("<SIN>\n");
         break;
-    case C:
+    case cos:
         printf("<COS>\n");
         break;
     

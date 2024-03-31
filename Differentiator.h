@@ -40,10 +40,11 @@ void file_read (const char* file_name, Tree* tree);
 void file_write(const char* file_name, Node* root);
 
 Node* differentiator_tree_read(char* source, Tree* akinator_tree, size_t* pos);
-void operator_scan(char* source, size_t* pos, Node* curr_node);
+void operation_scan(char* source, size_t* pos, Node* curr_node);
 void arg_scan(char* source, size_t* pos, Node* curr_node);
 
 Operation get_oper_code(char* source);
+Function get_funct_code(char* func);
 void skip_arg(char* source, size_t *pos);
 size_t nsymbol_in_str(char* source, char symbol);
 

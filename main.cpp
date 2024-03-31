@@ -16,7 +16,7 @@ int main()
     tree_print(main_tree->node_list, read_tree, &level);
     fclose(read_tree);
 
-    //node_list_print(main_tree);
+    node_list_print(main_tree);
 
     Node* diff_tree = diff_the_tree(main_tree->node_list);
     tree_detor(main_tree);
