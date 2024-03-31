@@ -31,6 +31,4 @@ int main()
 
 
     //node_dtor(main_tree->node_list);
-
-                                                                                                                                                                                                         printf ("Миша дурак!\n");
 }

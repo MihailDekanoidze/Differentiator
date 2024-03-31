@@ -8,10 +8,6 @@
 #include "../include/others.h"
 
 
-#define PRINT_ARG(curr_node) if(curr_node->data_type == number) printf(" %lg ", curr_node->val->number);         \
-                        else printf(" %c ", get_oper_symbol(curr_node->val->op))
-
-
 Tree* tree_create(size_t node_count)
 {
     Tree* tree = (Tree*)calloc(1, sizeof(Tree));
@@ -42,7 +38,7 @@ void node_list_print(Tree* tree)
     for (size_t i = 0; i < tree->node_count; i++)
     {
         printf("Node %zu has arg ", i);
-        PRINT_ARG((tree->node_list + i));
+        print_arg((tree->node_list + i));
         printf("\n");
     }
 }
@@ -68,7 +64,7 @@ void tree_detor(Tree* tree)
 
         printf("I plan to free a node_data to address %p, val is ",
         &((tree->node_list + i)->val));
-        PRINT_ARG(((tree->node_list + i)));
+        print_arg(((tree->node_list + i)));
 
         free((tree->node_list + i)->val);
         printf("Sucsess!\n");
@@ -94,10 +90,20 @@ void tree_print(const Node* tree, FILE* tree_data, size_t* level)
 
     if(tree->left == NULL)
     {
-        printf("I plan to write a node_data to address %p, val is ", tree->val);
-        PRINT_ARG(tree);
+        if (tree->data_type == number)
+        {
+            printf("I plan to write a node_data to address %p, val is ", tree->val);
+            print_arg(tree);
 
-        fprintf(tree_data, "%lg", tree->val->number);
+            fprintf(tree_data, "%lg", tree->val->number);
+        }
+        else
+        {
+            printf("I plan to write a node_data to address %p, val is ", tree->val);
+            print_arg(tree);
+
+            fprintf(tree_data, "%c", tree->val->var);
+        }
         return;        
     }
 
@@ -298,4 +304,43 @@ void node_dtor(Node* node)
     free(node);
 
     return;
+}
+
+void print_arg(const Node* curr_node)
+{
+    switch (curr_node->data_type)
+    {                                       
+    case number:
+        printf(" <%lg> \n", curr_node->val->number);
+        break;
+    case var:
+        printf(" <%c> \n", curr_node->val->var);
+        break;
+    case operation:
+        printf(" <%c> \n", get_oper_symbol(curr_node->val->op));
+        break;
+    case func:
+        print_func(curr_node->val->func);
+        break;
+    default:
+        printf("Unknown tyde <%lln>\n", (unsigned long long*)curr_node->val);
+        break;
+    }
+}
+
+void print_func(Function func)
+{
+    switch (func)
+    {
+    case S:
+        printf("<SIN>\n");
+        break;
+    case C:
+        printf("<COS>\n");
+        break;
+    
+    default:
+        printf("Unknown function\n");
+        break;
+    }
 }

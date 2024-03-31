@@ -20,7 +20,7 @@
 #define OBJECT_FOUND    1 << 7
 #define OBJECT_N_FOUND  1 << 8
 #define RUS_CHAR_SIZE   sizeof('ф')
-
+#define OPERATIONS_AND_FUNCTIONS_COUNT 7
 #define TREE_CALLOC_ERROR  NULL;
 
 #define TREE_PRINT(node_list, file)     size_t level = 0;                                    \
@@ -51,8 +51,8 @@ enum Operation
 
 enum Function
 {
-    S = 1,
-    C = 2
+    S = 5,
+    C = 6
 };
 
 typedef union node_data
@@ -107,6 +107,11 @@ void                skip_spaces(char* source, size_t* pos);
 void                ClearBuffer(void);
 void                fprint_nchar(FILE* dest, char symbol, size_t count);
 char                get_oper_symbol(Operation);
+
+
+void                print_arg(const Node* curr_node);
+void                print_func(Function func);
+
 
 //struct Stack*       way_stack(Tree* tree, char* val);
 //int                 way_search(Node* curr_node, double val, struct Stack* way_to_obj);
