@@ -17,11 +17,11 @@
 #define _SIN(left) create_node(func, Sin, left, NULL)
 #define _COS(left) create_node(func, Cos, left, NULL)
 
-#define DL diff_the_tree(node->left)
-#define DR diff_the_tree(node->right)
+#define DL diff_the_tree(node->left, diff_tree)
+#define DR diff_the_tree(node->right, diff_tree)
 
-#define CL copy_tree(node->left)
-#define CR copy_tree(node->right)
+#define CL copy_tree(node->left,  diff_tree)
+#define CR copy_tree(node->right, diff_tree)
 
 
 #define VAL_FILLING(type, data, key) node_data* val_##type(type data)                                   \
@@ -36,7 +36,7 @@
 
 
 
-void file_read (const char* file_name, Tree* tree);
+int file_read (const char* file_name, Tree* tree);
 void file_write(const char* file_name, Node* root);
 
 Node* differentiator_tree_read(char* source, Tree* akinator_tree, size_t* pos);
@@ -48,9 +48,9 @@ Function get_funct_code(char* func);
 void skip_arg(char* source, size_t *pos);
 size_t nsymbol_in_str(char* source, char symbol);
 
-Node* diff_the_tree(const Node* node);
+Node* diff_the_tree(const Node* node, Tree* diff_tree);
 Node* create_node(Type, const node_data*, Node*, Node*);
-Node* copy_tree(const Node*);
+Node* copy_tree(const Node*, Tree*);
 
 
 node_data* val_double           (double);

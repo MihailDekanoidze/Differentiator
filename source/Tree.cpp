@@ -60,14 +60,14 @@ void tree_detor(Tree* tree)
 {
     for (size_t i = 0; i < tree->node_count; i++)
     {
-        printf("Attempt to free node[%zu]\n", i);
+        //printf("Attempt to free node[%zu]\n", i);
 
-        printf("I plan to free a node_data to address %p, val is ",
-        &((tree->node_list + i)->val));
-        print_arg(((tree->node_list + i)));
+        //printf("I plan to free a node_data to address %p, val is ",
+        //&((tree->node_list + i)->val));
+        //print_arg(((tree->node_list + i)));
 
         free((tree->node_list + i)->val);
-        printf("Sucsess!\n");
+        //printf("Sucsess!\n");
     }
     
     free(tree->node_list);
@@ -80,49 +80,68 @@ void tree_detor(Tree* tree)
     free(tree);
 }
 
-void tree_print(const Node* tree, FILE* tree_data, size_t* level)
+void tree_print(const Node* tree, FILE* tree_data)
 {
-    //printf("I am in print \n");
-
     if (tree == NULL) return;
 
-    //fprint_nchar(tree_data, '\t', *level);
+    fprintf(tree_data, "(");
 
-    if(tree->left == NULL)
+    if ((tree->right == NULL) && (tree->left == NULL))
     {
-        if (tree->data_type == number)
+        switch(tree->data_type)
         {
-            printf("I plan to write a node_data to address %p, val is ", tree->val);
+        case number:
+        {
+            printf("I plan to write a number, val is ");
             print_arg(tree);
+            printf("\n");
 
             fprintf(tree_data, "%lg", tree->val->number);
+            break;
         }
-        else
+        case var:
         {
-            printf("I plan to write a node_data to address %p, val is ", tree->val);
+            printf("I plan to write a var, val is ");
             print_arg(tree);
+            printf("\n");
 
             fprintf(tree_data, "%c", tree->val->var);
+            break;
         }
-        return;        
+        case empty_node:
+            printf("Empty node\n");
+        case func:
+        case operation:
+        default:
+            break;
+        }
+    }
+    else
+    {
+        printf("\nleft print\n");
+        tree_print(tree->left, tree_data);
+
+        switch (tree->data_type)
+        {
+        case operation:
+            fprintf(tree_data, "%c", get_oper_symbol(tree->val->op));
+            break;
+        case func:
+            print_func(tree_data, tree->val->func);
+        case var:
+        case number:
+        case empty_node:
+        default:
+            break;
+        }
+    
+        printf("\nright print\n");
+        tree_print(tree->right, tree_data);
     }
 
-    fprintf(tree_data, "{");
-    (*level)++;
-
-    tree_print(tree->left, tree_data, level);
-
-    //fprint_nchar(tree_data, '\t', *level);
-
-    fprintf(tree_data, "%c", get_oper_symbol(tree->val->op));
-
-    tree_print(tree->right, tree_data, level);
-
-    (*level)--;
-
-    //fprint_nchar(tree_data, '\t', *level);
-    fprintf(tree_data, "}");
+    fprintf(tree_data, ")");
 }
+
 
 void skip_spaces(char* source, size_t* pos)
 {
@@ -311,34 +330,37 @@ void print_arg(const Node* curr_node)
     switch (curr_node->data_type)
     {                                       
     case number:
-        printf(" <%lg> \n", curr_node->val->number);
+        printf(" #%lg# ", curr_node->val->number);
         break;
     case var:
-        printf(" <%c> \n", curr_node->val->var);
+        printf(" #%c# ", curr_node->val->var);
         break;
     case operation:
-        printf(" <%c> \n", get_oper_symbol(curr_node->val->op));
+        printf(" %c ", get_oper_symbol(curr_node->val->op));
         break;
     case func:
-        print_func(curr_node->val->func);
+        print_func(stdout, curr_node->val->func);
+        break;
+    case empty_node:
+        printf("Empty node\n");
         break;
     default:
-        printf("Unknown tyde <%lln>\n", (unsigned long long*)curr_node->val);
+        printf("Unknown type <%lln>\n", (long long*)(curr_node->val));
         break;
     }
 }
 
-void print_func(Function func)
+void print_func(FILE* dest, Function func)
 {
     switch (func)
     {
     case sin:
-        printf("<SIN>\n");
+        fprintf(dest, "SIN");
         break;
     case cos:
-        printf("<COS>\n");
+        fprintf(dest, "COS");
         break;
-    
+    case null_func:
     default:
         printf("Unknown function\n");
         break;

@@ -8,27 +8,19 @@ int main()
 {
     Tree* main_tree = tree_create(10);
 
-    file_read("tree.txt", main_tree);
-
-    FILE* read_tree = fopen("after_read.txt", "w+");
-
-    size_t level = 0;
-    tree_print(main_tree->node_list, read_tree, &level);
-    fclose(read_tree);
+    if (!file_read("tree.txt", main_tree)){return 1;}
+    file_write("after_read.txt", main_tree->node_list);
 
     node_list_print(main_tree);
 
+    file_write("Test_output.txt", main_tree->node_list);
+
+
+    Tree* diff = tree_create(main_tree->node_count)
+
     Node* diff_tree = diff_the_tree(main_tree->node_list);
+
+
     tree_detor(main_tree);
 
-    /*size_t level = 0;
-    tree_print(diff_tree, main_tree->tree_log, &level);*/
-    
-    //level = 0;
-    file_write("output.txt", diff_tree);
-
-    node_dtor(diff_tree);
-
-
-    //node_dtor(main_tree->node_list);
 }

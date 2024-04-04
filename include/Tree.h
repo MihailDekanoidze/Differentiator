@@ -67,10 +67,11 @@ typedef union node_data
 
 enum Type
 {
-    operation = 1,
-    number    = 2,
-    var       = 3,
-    func      = 4
+    empty_node = 0,
+    operation  = 1,
+    number     = 2,
+    var        = 3,
+    func       = 4
 };
 
 
@@ -96,7 +97,7 @@ struct Tree {
 };
 
 Tree*               tree_create(size_t node_count);
-void                tree_print(const Node* tree, FILE* tree_log, size_t* level);
+void                tree_print(const Node* tree, FILE* tree_data);
 Tree*               tree_increase_capasity(Tree* tree);
 void                tree_detor(Tree* tree);
 void                node_dtor(Node* node);
@@ -111,7 +112,7 @@ char                get_oper_symbol(Operation);
 
 
 void                print_arg(const Node* curr_node);
-void                print_func(Function func);
+void                print_func(FILE* dest, Function func);
 
 
 //struct Stack*       way_stack(Tree* tree, char* val);
