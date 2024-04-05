@@ -9,19 +9,19 @@
 
 #define _NUM(num) create_node(number, val_double((double) num), NULL, NULL)
 
-#define _ADD(left, right) create_node(operation, Add,   left, right)
-#define _SUB(left, right) create_node(operation, Sub,   left, right)
-#define _MUL(left, right) create_node(operation, Mul,   left, right)
-#define _DIV(left, right) create_node(operation, Div, left, right)
+#define _ADD(left_node, right_node) create_node(operation, Add,   left_node, right_node)
+#define _SUB(left_node, right_node) create_node(operation, Sub,   left_node, right_node)
+#define _MUL(left_node, right_node) create_node(operation, Mul,   left_node, right_node)
+#define _DIV(left_node, right_node) create_node(operation, Div,   left_node, right_node)
 
-#define _SIN(left) create_node(func, Sin, left, NULL)
-#define _COS(left) create_node(func, Cos, left, NULL)
+#define _SIN(right_node_node) create_node(func, Sin, NULL, right_node_node)
+#define _COS(right_node_node) create_node(func, Cos, NULL, right_node_node)
 
-#define DL diff_the_tree(node->left, diff_tree)
-#define DR diff_the_tree(node->right, diff_tree)
+#define DL diff_the_tree(node->left)
+#define DR diff_the_tree(node->right)
 
-#define CL copy_tree(node->left,  diff_tree)
-#define CR copy_tree(node->right, diff_tree)
+#define CL copy_tree(node->left)
+#define CR copy_tree(node->right)
 
 
 #define VAL_FILLING(type, data, key) node_data* val_##type(type data)                                   \
@@ -48,9 +48,9 @@ Function get_funct_code(char* func);
 void skip_arg(char* source, size_t *pos);
 size_t nsymbol_in_str(char* source, char symbol);
 
-Node* diff_the_tree(const Node* node, Tree* diff_tree);
+Node* diff_the_tree(const Node* node);
 Node* create_node(Type, const node_data*, Node*, Node*);
-Node* copy_tree(const Node*, Tree*);
+Node* copy_tree(const Node*);
 
 
 node_data* val_double           (double);

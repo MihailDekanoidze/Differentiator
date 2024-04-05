@@ -106,6 +106,7 @@ Node*               tree_add_node(Node* parent, Child subtree, Tree* curr_tree, 
 
 void                node_list_print(Tree* main_tree);
 void                skip_spaces(char* source, size_t* pos);
+void                skip_alpha(char* source, size_t* pos);
 void                ClearBuffer(void);
 void                fprint_nchar(FILE* dest, char symbol, size_t count);
 char                get_oper_symbol(Operation);

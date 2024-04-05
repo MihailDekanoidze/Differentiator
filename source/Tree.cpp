@@ -78,6 +78,8 @@ void tree_detor(Tree* tree)
     tree->node_count = 0;
 
     free(tree);
+
+    //printf("Free ends\n");
 }
 
 void tree_print(const Node* tree, FILE* tree_data)
@@ -92,24 +94,24 @@ void tree_print(const Node* tree, FILE* tree_data)
         {
         case number:
         {
-            printf("I plan to write a number, val is ");
-            print_arg(tree);
-            printf("\n");
+            //printf("I plan to write a number, val is ");
+            //print_arg(tree);
+            //printf("\n");
 
             fprintf(tree_data, "%lg", tree->val->number);
             break;
         }
         case var:
         {
-            printf("I plan to write a var, val is ");
-            print_arg(tree);
-            printf("\n");
+            //printf("I plan to write a var, val is ");
+            //print_arg(tree);
+            //printf("\n");
 
             fprintf(tree_data, "%c", tree->val->var);
             break;
         }
         case empty_node:
-            printf("Empty node\n");
+            //printf("Empty node\n");
         case func:
         case operation:
         default:
@@ -118,7 +120,7 @@ void tree_print(const Node* tree, FILE* tree_data)
     }
     else
     {
-        printf("\nleft print\n");
+        //printf("\nleft print\n");
         tree_print(tree->left, tree_data);
 
         switch (tree->data_type)
@@ -135,7 +137,7 @@ void tree_print(const Node* tree, FILE* tree_data)
             break;
         }
     
-        printf("\nright print\n");
+        //printf("\nright print\n");
         tree_print(tree->right, tree_data);
     }
 
@@ -150,6 +152,18 @@ void skip_spaces(char* source, size_t* pos)
         (*pos)++;
     }
 }
+
+void skip_alpha(char* source, size_t* pos)
+{
+    printf("cur symbol is %c\n", *(source + *pos));
+    while (isalpha(*(source + *pos)))
+    {
+        printf("alpfa symbol is %c\n", *(source + *pos));
+        (*pos)++;
+    }
+    printf("cur symbol is %c\n", *(source + *pos));
+}
+
 
 void ClearBuffer(void)
 {

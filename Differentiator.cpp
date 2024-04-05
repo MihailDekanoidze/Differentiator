@@ -62,7 +62,7 @@ Node* differentiator_tree_read(char* source, Tree* differentiator_tree, size_t* 
 
     skip_spaces(source, pos);
 
-    //printf("the next symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
+    printf("the next symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
     
     if (*(source + *(pos)) == '{')                  // reverse if 
     {
@@ -151,7 +151,7 @@ Node* differentiator_tree_read(char* source, Tree* differentiator_tree, size_t* 
 
         printf("the remained tree after arg scanned = \n%s\n", source + *(pos));
 
-        new_node = differentiator_tree->node_list + differentiator_tree->node_count - 1;
+        //new_node = differentiator_tree->node_list + differentiator_tree->node_count - 1;
         
         return new_node;
     }
@@ -225,15 +225,17 @@ void operation_scan(char* source, size_t* pos, Node* curr_node)
     {
         curr_node->val->op = op;
         curr_node->data_type = operation;
+        (*pos)++;
     }
     else
     {
         curr_node->val->func = get_funct_code(source + *(pos));
         curr_node->data_type = func;
     }
+    skip_alpha(source, pos);
+
     //printf("type is operation\n");
     //printf("operation is %c\n", *(source + *(pos)));
-    (*pos)++;
 
     return;
 }
@@ -316,11 +318,11 @@ node_data* val_double(double data)
 
 
 
-Node* diff_the_tree(const Node* node, Tree* diff_tree)
+Node* diff_the_tree(const Node* node)
 {
     ClearBuffer();
     print_arg(node);
-
+    printf("\n");
 
     printf("left is null = %d\n", node->left == NULL);
     printf("right is null = %d\n", node->right == NULL);
@@ -372,12 +374,12 @@ Node* diff_the_tree(const Node* node, Tree* diff_tree)
         switch (node->val->func)
         {
         case sin:
-            return _MUL(_COS(CL), DL);
+            return _MUL(_COS(CR), DR);
         case cos:
             {
                 node_data* Number = val_double(-1);
                 Node* num_node = create_node(number, Number, NULL, NULL);
-                Node* new_node =  _MUL(num_node, _MUL(_SIN(CL), DL)); ;
+                Node* new_node =  _MUL(num_node, _MUL(_SIN(CR), DR)); ;
                 free(Number);
                 return new_node;
             }
@@ -398,16 +400,16 @@ Node* diff_the_tree(const Node* node, Tree* diff_tree)
     }   
 }
 
-Node* copy_tree(const Node* node, Tree* diff_tree)
+Node* copy_tree(const Node* node)
 {
     if (node == NULL) return NULL;
 
-    tree_increase_capasity(diff_tree);
     Node* copy_node = (Node*)calloc(1, sizeof(Node));
     copy_node->val = (node_data*)calloc(1, sizeof(node_data));
 
-    //printf("node val address is %p, val is ", &(node->val));
-    //print_arg(node);
+    printf("node val address is %p, val is ", &(node->val));
+    print_arg(node);
+    printf("\n");
 
     memcpy(&copy_node->data_type, &node->data_type, sizeof(Type));
     memcpy(copy_node->val, node->val, sizeof(node_data));
@@ -415,8 +417,8 @@ Node* copy_tree(const Node* node, Tree* diff_tree)
     /*copy_node->data_type = node->data_type;
     copy_node->val = node->val;*/
 
-    copy_node->left  = copy_tree(node->left, diff_tree);
-    copy_node->right = copy_tree(node->right, diff_tree);
+    copy_node->left  = copy_tree(node->left);
+    copy_node->right = copy_tree(node->right);
 
     return copy_node;
 }
