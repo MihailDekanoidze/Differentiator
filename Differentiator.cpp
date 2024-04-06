@@ -13,8 +13,8 @@ const node_data* Add        = val_Operation(add);
 const node_data* Sub        = val_Operation(sub);      //array with funct node_datas
 const node_data* Mul        = val_Operation(mul);
 const node_data* Div        = val_Operation(divis);
-const node_data* Sin        = val_Function(sin);
-const node_data* Cos        = val_Function(cos);
+const node_data* Sin        = val_Function(sin_f);
+const node_data* Cos        = val_Function(cos_f);
 
 
 int file_read(const char* file_name, Tree* tree)
@@ -204,14 +204,14 @@ Function get_funct_code(char* func)
     {
     case 'S':
         printf("Funct sin was processed!\n");
-        return sin;
+        return sin_f;
     case 'C':
         printf("Funct cos was processed!\n");
-        return cos;
+        return cos_f;
     
     default:
         printf("Unknown func is %c\n", *func);
-        return null_func;
+        return null_f;
     }
 }
 
@@ -373,9 +373,9 @@ Node* diff_the_tree(const Node* node)
     {
         switch (node->val->func)
         {
-        case sin:
+        case sin_f:
             return _MUL(_COS(CR), DR);
-        case cos:
+        case cos_f:
             {
                 node_data* Number = val_double(-1);
                 Node* num_node = create_node(number, Number, NULL, NULL);
@@ -383,7 +383,7 @@ Node* diff_the_tree(const Node* node)
                 free(Number);
                 return new_node;
             }
-        case null_func:       
+        case null_f:       
         default:
             printf("Unxepected function\n");
             return NULL;
@@ -454,4 +454,137 @@ Node* create_node(Type data_type, const node_data* val, Node* left, Node* right)
     return new_node;   
 }
 
+void const_calculation(Node* node, size_t* changes)
+{
+    int var_found = 0;
 
+    if ((node->left == NULL) && (node->right == NULL))
+    {
+        return;
+    }
+
+    if ((node->data_type == operation) || (node->data_type == func))
+    {
+        var_found = var_search(node->left); 
+        if (var_found == OBJECT_FOUND)
+        {
+            const_calculation(node->left, changes);
+        }
+
+        var_found |= var_search(node->left);
+        if (var_found == OBJECT_FOUND)
+        {
+            const_calculation(node->right, changes);
+        }
+    } 
+
+    if (var_found == OBJECT_FOUND)
+    {
+        return;
+    }
+
+    if (node->data_type == operation)
+    {
+        node->data_type = number;
+
+        switch (node->val->op)
+        {
+        case add:
+            node->val->number = node->left->val->number + node->right->val->number;
+            break;
+        case sub:
+            node->val->number = node->left->val->number - node->right->val->number;
+            break; 
+        case mul:
+            node->val->number = node->left->val->number * node->right->val->number;
+            break;       
+        case divis:
+            node->val->number = node->left->val->number / node->right->val->number;
+            break;        
+        
+        default:
+            printf("Unknown operation\n");
+            break;
+        }
+
+        node_dtor(node->left);
+        node_dtor(node->right);
+
+        node->left =  NULL;
+        node->right = NULL;
+
+        (*changes)++;
+    }
+
+    return;
+}
+
+
+void null_multiply(Node* node, size_t* changes)
+{
+    if (node == NULL) return;
+
+    if ((node->data_type == operation) && (node->val->op == mul))
+    {
+        if ((node->left->data_type == number) && (node->left->val->number == (double)0))
+        {
+            node_dtor(node->right);
+            node_dtor(node->left);
+
+            (*changes)++;
+
+            node->data_type = number;
+            node->val->number = (double)0;
+
+            node->left =  NULL;
+            node->right = NULL;
+
+            return;
+        }
+        if ((node->right->data_type == number) && (node->right->val->number == (double)0))
+        {
+            node_dtor(node->left);
+            node_dtor(node->right);
+
+            (*changes)++;
+
+            node->data_type = number;
+            node->val->number = (double)0;
+
+            node->left =  NULL;
+            node->right = NULL;
+
+            return;
+        }
+    }
+
+    return;
+}
+
+
+
+int var_search(Node* curr_node)
+{
+    if (curr_node == NULL) return OBJECT_N_FOUND;
+
+    printf("Curr node is ");
+    print_arg(curr_node);
+    printf("\n");
+
+    if (curr_node->data_type == var)
+    {
+        return OBJECT_FOUND;
+    }
+
+    int var_found = var_search(curr_node->left) | var_search(curr_node->right);
+
+    printf("For node ");
+    print_arg(curr_node);
+    printf(" var_found = %d\n", var_found);
+
+    if (var_found & OBJECT_FOUND)
+    {
+        return OBJECT_FOUND;
+    }
+    return OBJECT_N_FOUND;
+}

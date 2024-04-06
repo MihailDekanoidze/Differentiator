@@ -222,38 +222,8 @@ Node* tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void*
     return new_node;
 }
 
-/*int way_search(Node* curr_node, double val, Stack* way_to_obj)
-{
-    if ((curr_node->left == NULL) && (curr_node->right == NULL))
-    {
-        int diff = CmpDbl(val, curr_node->val->number);
 
-        if (!diff) 
-        {
-            return OBJECT_FOUND;
-        }
-
-        return OBJECT_N_FOUND;
-    }
-
-    int buffer = 0;
-
-    StackPush(way_to_obj, left);
-    
-    if (way_search(curr_node->left, val, way_to_obj) == OBJECT_FOUND)
-    {
-        return OBJECT_FOUND;
-    }
-    StackPop(way_to_obj, &buffer);
-
-    StackPush(way_to_obj, right);
-    if  (way_search(curr_node->right, val, way_to_obj) == OBJECT_FOUND) return OBJECT_FOUND;
-    StackPop(way_to_obj, &buffer);
-
-    return OBJECT_N_FOUND;
-}
-
-struct Stack* way_stack(Tree* tree, double val)
+/*struct Stack* way_stack(Tree* tree, double val)
 {
     Stack* way_to_obj = (Stack*) calloc (1, sizeof(Stack));
 
@@ -368,13 +338,13 @@ void print_func(FILE* dest, Function func)
 {
     switch (func)
     {
-    case sin:
+    case sin_f:
         fprintf(dest, "SIN");
         break;
-    case cos:
+    case cos_f:
         fprintf(dest, "COS");
         break;
-    case null_func:
+    case null_f:
     default:
         printf("Unknown function\n");
         break;

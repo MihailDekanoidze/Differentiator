@@ -21,7 +21,7 @@ undefined,unreachable,vla-bound,vptr
 
 all: Differentiator
 
-Differentiator:  InputText.o Stack.o Tree.o Differentiator.o main.o  
+Differentiator:  InputText.o Stack.o Tree.o Differentiator.o main.o  calc.o
 		@g++ ./Apps/InputText.o ./Apps/Stack.o ./Apps/Tree.o ./Apps/Differentiator.o ./Apps/main.o -o Differentiator.exe $(FLAGS)
 
 InputText.o:
@@ -46,4 +46,10 @@ run:
 		./Differentiator.exe
 
 image:
-		dot tree.dot -T png -o tree.png
+		dot tree.dot -T png -o tree.png\
+
+calc.o:
+		@g++ ./Apps/InputText.o Calc.cpp -o Calc.exe $(FLAGS)
+
+calc:
+		./Calc.exe

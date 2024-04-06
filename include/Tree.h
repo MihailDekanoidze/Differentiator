@@ -51,9 +51,16 @@ enum Operation
 
 enum Function
 {
-    sin = 5,
-    cos = 6,
-    null_func = 7
+    sin_f = 5,
+    cos_f = 6,
+    null_f = 7,
+    ln_f = 8,
+    tg_f = 9,
+    ctg_f = 10,
+    sh_f = 11,
+    ch_f = 12,
+    th_f = 13,
+    cth_f =14
 };
 
 typedef union node_data

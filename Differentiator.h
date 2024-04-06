@@ -52,6 +52,21 @@ Node* diff_the_tree(const Node* node);
 Node* create_node(Type, const node_data*, Node*, Node*);
 Node* copy_tree(const Node*);
 
+int var_search(Node* curr_node);
+void const_calculation(Node* node, size_t* changes);
+
+
+
+void syntax_error(void);
+double get_G(const char* str);
+double get_N(void);
+double get_E(void);
+double get_T(void);
+double get_P(void);
+double get_C(void);
+double get_F(void);
+double get_constant(char* source);
+
 
 node_data* val_double           (double);
 node_data* val_Operation        (Operation);
