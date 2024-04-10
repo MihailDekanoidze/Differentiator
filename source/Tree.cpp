@@ -8,78 +8,37 @@
 #include "../include/others.h"
 
 
-Tree* tree_create(size_t node_count)
+Tree* tree_create(void)
 {
     Tree* tree = (Tree*)calloc(1, sizeof(Tree));
 
-    if (!tree)
-        return TREE_CALLOC_ERROR;
-    
-    Node* root = (Node*) calloc(node_count, sizeof(Node));
+    assert(tree);
 
-    if (!root)
-        return TREE_CALLOC_ERROR;
+    tree->root = NULL;
 
-    tree->node_list = root;
-
-    tree->capacity = node_count;
-    tree->node_list->left = NULL;
-    tree->node_list->right = NULL;
-    tree->node_list->previous = NULL;
+    /*tree->root->left = NULL;
+    tree->root->right = NULL;
+    tree->root->previous = NULL;*/
 
     FILE* tree_log = FOPEN("tree_log.cpp", "w+");
     tree->tree_log = tree_log;
+
+    assert(tree);
     
     return tree;
 }
 
-void node_list_print(Tree* tree)
-{
-    for (size_t i = 0; i < tree->node_count; i++)
-    {
-        printf("Node %zu has arg ", i);
-        print_arg((tree->node_list + i));
-        printf("\n");
-    }
-}
 
-Tree* tree_increase_capasity(Tree* tree)
-{
-    //printf("increase capacity!\n");
-    //printf("old capacity = %zu\n", tree->capacity);
-
-    tree->node_list = (Node*)realloc(tree->node_list, sizeof(Node) * tree->capacity * TREE_NODE_INCREASE_COEF);
-    tree->capacity *= TREE_NODE_INCREASE_COEF;
-
-    //printf("new capacity = %zu\n", tree->capacity);
-
-    return tree; 
-}
 
 void tree_detor(Tree* tree)
 {
-    for (size_t i = 0; i < tree->node_count; i++)
-    {
-        //printf("Attempt to free node[%zu]\n", i);
-
-        //printf("I plan to free a node_data to address %p, val is ",
-        //&((tree->node_list + i)->val));
-        //print_arg(((tree->node_list + i)));
-
-        free((tree->node_list + i)->val);
-        //printf("Sucsess!\n");
-    }
-    
-    free(tree->node_list);
+    node_dtor(tree->root);
     
     FCLOSE(tree->tree_log);
 
-    tree->capacity = 0;
-    tree->node_count = 0;
-
     free(tree);
 
-    //printf("Free ends\n");
+    printf("Free ends\n");
 }
 
 void tree_print(const Node* tree, FILE* tree_data)
@@ -179,11 +138,8 @@ void fprint_nchar(FILE* dest, char symbol, size_t count)
 
 Node* tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void* arg)
 {
-    if (curr_tree->node_count == curr_tree->capacity)
-        tree_increase_capasity(curr_tree);
-
-    Node* new_node = &(curr_tree->node_list)[curr_tree->node_count++];
-
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+    
     new_node->left  = NULL;
     new_node->right = NULL;
     new_node->previous = parent;
@@ -277,15 +233,15 @@ char get_oper_symbol(Operation op)
 {
     switch (op)
     {
-    case add:
+    case add_op:
         return '+';
-    case sub:
+    case sub_op:
         return '-';
-    case mul:
+    case mul_op:
         return '*';
-    case divis:
+    case divis_op:
         return '/';
-    case null_operator:
+    case null_op:
     default:
         return '?';
         break;
@@ -298,6 +254,10 @@ char get_oper_symbol(Operation op)
 void node_dtor(Node* node)
 {
     if (node == NULL) return;
+
+    printf("I plan to clean val ");
+    print_arg(node);
+    printf("\n");
 
     free(node->val);
 
@@ -343,6 +303,12 @@ void print_func(FILE* dest, Function func)
         break;
     case cos_f:
         fprintf(dest, "COS");
+        break;
+    case ln_f:
+        fprintf(dest, "LN");
+        break;
+    case tg_f:
+        fprintf(dest, "TG");
         break;
     case null_f:
     default:

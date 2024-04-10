@@ -7,13 +7,12 @@
 #include "./Differentiator.h"
 
 #define REQUIRE(exp_symbol, curr_symbol)                                          \
-printf("Expected symbol is %c, but curr_symbol is %c\n", exp_symbol, curr_symbol)
+printf("Expected symbol is %c, but curr_symbol is %c(%d)\n", exp_symbol, curr_symbol, curr_symbol)
 
 #define FUNC_LEN 4
 #define CONSTANT_LEN 2
 
 const char* S = NULL;
-
 
 int main()
 {
@@ -28,7 +27,7 @@ int main()
     TextInfo* expression = (TextInfo*)calloc(1, sizeof(TextInfo)); 
     InputText(expression, source);
 
-    double val = get_G((char*)expression->buffer);
+    double val = get_G((char*)expression->buffer, 1);
 
     printf("Val = %lg\n", val);
 
@@ -40,8 +39,10 @@ void syntax_error(void)
     fprintf(stderr, "Syntax error\n");
 }
 
-double get_G(const char* str)
+double get_G(const char* str, double var)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+    
     S = str;
 
     double val = get_E();
@@ -54,6 +55,8 @@ double get_G(const char* str)
 
 double get_N(void)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+
     const char* old_str = S;
 
     double val = 0;
@@ -66,12 +69,14 @@ double get_N(void)
 
     if (old_str == S) val = get_C();
     if (old_str == S) syntax_error();
-    
+
     return val;
 }
 
 double get_E(void)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+
     double val = 0;
 
     val = get_T();
@@ -92,9 +97,9 @@ double get_E(void)
 
 double get_T(void)
 {
-    double val = 0;
+    printf("%s\n", __PRETTY_FUNCTION__);
 
-    val = get_F();
+    double val = get_F();
 
     while ((*S == '*') || (*S == '/'))
     {
@@ -112,6 +117,8 @@ double get_T(void)
 
 double get_P(void)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+
     double val = 0;
 
     if (*S != '(') val = get_N();
@@ -129,13 +136,16 @@ double get_P(void)
 
 double get_F(void)
 {
-    double val = 0;
-    double constant = 0; 
+    printf("%s\n", __PRETTY_FUNCTION__);
+
+    double val = 0; 
     const char * old_str = S;
 
     if (!isalpha(*S))
     {
-        val = get_P();
+        val = get_D();
+
+        printf("%s\n", __PRETTY_FUNCTION__);
         return val;
     }
 
@@ -154,11 +164,11 @@ double get_F(void)
     if (function == null_f)
     {
         S = old_str;
-        val = get_P();
+        val = get_D();
         return val;
     }
 
-    double arg = get_P();
+    double arg = get_D();
 
     switch (function)
     {
@@ -247,13 +257,14 @@ Function get_funct_code(char* source)
     }
     else
     {
-        //printf("Unkown function is %s!\n", source);
         return null_f;
     }
 }
 
 double get_C(void)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+
     double val = 0;
 
     size_t pos = 0;
@@ -269,11 +280,14 @@ double get_C(void)
     val = get_constant(constant);
 
     free(constant);
+
     return val;
 }
 
 double get_constant(char* source)
 {
+    printf("%s\n", __PRETTY_FUNCTION__);
+
     if (strncmp(source, "e",  1) == 0)
     {
         source += 1;
@@ -289,4 +303,21 @@ double get_constant(char* source)
         printf("Unkown constant is %s !\n", source);
         return NAN;
     }
+}
+
+double get_D(void)
+{
+    printf("%s\n", __PRETTY_FUNCTION__);
+
+    double val = get_P();
+
+    while (*S == '^')
+    {
+        S++;
+        double val2 = get_P();
+
+        val = pow(val, val2);
+    }
+
+    return val;
 }

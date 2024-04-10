@@ -2,19 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "./include/Tree.h"
 #include "./include/InputText.h"
 #include "./Differentiator.h"
-
-
-const node_data* null_op    = val_Operation(null_operator);
-const node_data* Add        = val_Operation(add);
-const node_data* Sub        = val_Operation(sub);      //array with funct node_datas
-const node_data* Mul        = val_Operation(mul);
-const node_data* Div        = val_Operation(divis);
-const node_data* Sin        = val_Function(sin_f);
-const node_data* Cos        = val_Function(cos_f);
 
 
 int file_read(const char* file_name, Tree* tree)
@@ -31,13 +23,10 @@ int file_read(const char* file_name, Tree* tree)
     InputText(file_buffer, input_file);
     fclose(input_file);
 
-    size_t count_node = nsymbol_in_str((char*)file_buffer->buffer, '{');
+    assert(tree);
+    assert(tree->root == NULL);
 
-    while (tree->capacity < count_node)
-        tree_increase_capasity(tree);
-
-    size_t pos = 0;
-    differentiator_tree_read((char*)(file_buffer)->buffer, tree, &pos);
+    tree->root = get_G((char*)(file_buffer)->buffer);
 
     TextInfoDtor(file_buffer);
     return 0;
@@ -47,131 +36,13 @@ void file_write(const char* file_name, Node* root)
 {
     FILE* output_tree = fopen(file_name, "w+");
 
-    printf("I plan to print tree to the file %s\n", file_name);
+    //printf("I plan to print tree to the file %s\n", file_name);
     tree_print(root, output_tree);
 
     fclose(output_tree);
 
     return;
 }
-
-Node* differentiator_tree_read(char* source, Tree* differentiator_tree, size_t* pos)
-{
-    printf("\nbegin read\n");
-    printf("the remained tree = \n%s\n", source + *(pos));
-
-    skip_spaces(source, pos);
-
-    printf("the next symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-    
-    if (*(source + *(pos)) == '{')                  // reverse if 
-    {
-        printf("processing symbol {\n");
-        
-        (*pos)++;
-        
-        skip_spaces(source, pos);
-        
-        printf("the reamined tree = \n%s\n", source + *(pos));
-        printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        
-        /*if (*(source + *(pos)) == '}') 
-        {   
-            printf("processing symbol }\n");
-            
-            (*pos)++;
-            
-            printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-            printf("the remained tree = \n%s\n", source + *(pos));
-            
-            return NULL;
-        }*/
-
-        Node* new_node = differentiator_tree->node_list + (differentiator_tree->node_count++);
-        new_node->val = (node_data*)calloc(1, sizeof(node_data));
-
-
-        if (*(source + *(pos)) == '#')
-        {
-            arg_scan(source, pos, new_node);      
-            //printf("the remained tree = \n%s\n", source + *(pos));
-
-            return new_node;
-        }
-
-        skip_spaces(source, pos);
-        
-        /*if (*(source + *(pos)) == '}') 
-        {
-            printf("the next symbol is '}'\n");
-            
-            new_node->left  = NULL;
-            new_node->right = NULL;
-            skip_spaces(source, pos);          
-        }*/
-
-        printf("the remained tree = \n%s\n", source + *(pos));
-        printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        printf("\nbegin left for ");
-
-        print_arg(new_node);
-
-        printf("\n");
-        
-        new_node->left  = differentiator_tree_read(source, differentiator_tree, pos);
-        skip_spaces(source, pos);
-        (*pos)++;
-
-        printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        printf("left end for x\n");
-
-
-        //new_node = differentiator_tree->node_list + differentiator_tree->node_count - 1;
-
-        skip_spaces(source, pos);
-        operation_scan(source, pos, new_node);
-        skip_spaces(source, pos);
-
-        print_arg(new_node);
-        printf("\n");
-        
-        printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        printf("the remained tree = \n%s\n", source + *(pos));
-        printf("the next processing symbol is %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        printf("\nbegin right for ");
-        print_arg(new_node);
-        printf("\n");
-
-        new_node->right = differentiator_tree_read(source, differentiator_tree, pos);
-        skip_spaces(source, pos);
-        (*pos)++;
-        printf("\nend right for");
-        print_arg(new_node);
-        printf("\n\n");
-
-        printf("the remained tree after arg scanned = \n%s\n", source + *(pos));
-
-        //new_node = differentiator_tree->node_list + differentiator_tree->node_count - 1;
-        
-        return new_node;
-    }
-    else
-    {
-        printf("symbol is not {, but %c(%d)\n", *(source + *(pos)), *(source + *(pos)));
-        printf("the remained tree = \n%s\n", source + *(pos));
-        
-        skip_spaces(source, pos);
-
-        (*pos)++;
-        return NULL;
-    }
-
-    //printf("Unexpected exit in pos = %zu\n", *pos);
-
-    return NULL;
-}
-    
-    //printf("Unexpected exit in pos = %zu\n", *pos);
 
 
 Operation get_oper_code(char* source)
@@ -182,112 +53,19 @@ Operation get_oper_code(char* source)
     switch ((int)(*source))
     {
     case '+':
-        return add;
+        return add_op;
     case '-':
-        return sub;
+        return sub_op;
     case '*':
-        return mul;
+        return mul_op;
     case '/':
-        return divis;
+        return divis_op;
     default:
         break;
     }
 
-    return null_operator;
+    return null_op;
 }
-
-Function get_funct_code(char* func)
-{
-    printf("get_funct_code has got funct <%c>\n", *func);
-
-    switch (*func)
-    {
-    case 'S':
-        printf("Funct sin was processed!\n");
-        return sin_f;
-    case 'C':
-        printf("Funct cos was processed!\n");
-        return cos_f;
-    
-    default:
-        printf("Unknown func is %c\n", *func);
-        return null_f;
-    }
-}
-
-void operation_scan(char* source, size_t* pos, Node* curr_node)
-{
-    skip_spaces(source, pos); 
-
-    Operation op = get_oper_code(source + *(pos));
-
-    if (op)
-    {
-        curr_node->val->op = op;
-        curr_node->data_type = operation;
-        (*pos)++;
-    }
-    else
-    {
-        curr_node->val->func = get_funct_code(source + *(pos));
-        curr_node->data_type = func;
-    }
-    skip_alpha(source, pos);
-
-    //printf("type is operation\n");
-    //printf("operation is %c\n", *(source + *(pos)));
-
-    return;
-}
-
-void arg_scan(char* source, size_t* pos, Node* curr_node)
-{
-    (*pos)++;
-
-    if (*(source + *(pos)) == '#')
-    {
-        (*pos)++;
-        printf("Null node\n");
-
-        curr_node->data_type = empty_node;
-        curr_node->left  = NULL;
-        curr_node->right = NULL;
-
-        return ;
-    }
-
-    int is_number = sscanf(source + *(pos), "%lg", &(curr_node->val->number));
-
-    if (!is_number)
-    {
-        curr_node->data_type = var;
-        curr_node->val->var = *(source + *pos);  
-        
-        printf("type is variable\n");
-        printf("variable is %c\n", curr_node->val->var); 
-    }
-    else
-    {
-        curr_node->data_type = number;
-        printf("type is number\n");
-        printf("number is %lg\n", curr_node->val->number);
-    }
-
-    curr_node->left = NULL;
-    curr_node->right = NULL;    
-
-    skip_arg(source, pos);
-    (*pos)++;
-
-    return;
-}
-
-
-void skip_arg(char* source, size_t *pos)
-{
-    while ((*(source + *pos)) != '#') {(*pos)++;}
-}
-
 
 size_t nsymbol_in_str(char* source, char symbol)
 {
@@ -300,18 +78,13 @@ size_t nsymbol_in_str(char* source, char symbol)
     return i;
 }
 
-VAL_FILLING(Operation, op, val->op = op);
-//VAL_FILLING(double,  number, val->number = number);
-VAL_FILLING(Function, func, val->func = func);
-VAL_FILLING(char, var, val->var = var);
-
 node_data* val_double(double data)         
 {              
     union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
     //memcpy(&(val->number), &data, sizeof(double));    
     val->number = data;   
 
-    printf("I am crete a new node_data to address %p, val is %lg\n", &val, val->number);
+    //printf("I am crete a new node_data to address %p, val is %lg\n", &val, val->number);
 
     return val;                                                         
 }
@@ -354,16 +127,16 @@ Node* diff_the_tree(const Node* node)
     case operation:{
         switch (node->val->op)
         {
-        case add:
-        case sub:
+        case add_op:
+        case sub_op:
             return create_node(operation, node->val, DL, DR);
-        case mul:
+        case mul_op:
             {
                 return _ADD(_MUL(DL, CR), _MUL(CL, DR));
             }
-        case divis:
+        case divis_op:
                 return _DIV(_SUB(_MUL(DL, CR), _MUL(CL, DR)), _MUL(CR, CR));
-        case null_operator:
+        case null_op:
         default:
             printf("Unxepected operation\n");
             return NULL;
@@ -423,29 +196,28 @@ Node* copy_tree(const Node* node)
     return copy_node;
 }
 
-Node* create_node(Type data_type, const node_data* val, Node* left, Node* right)
+Node* create_node(Type data_type, node_data* val, Node* left, Node* right)
 {
     Node* new_node = (Node*) calloc(1, sizeof(Node));
-    new_node->val = (node_data*)calloc(1, sizeof(node_data));
+    new_node->val = val;
+    new_node->data_type = data_type;
 
-    printf("Before memcpy ");
+    //printf("Before memcpy ");
 
-    
-    memcpy(&new_node->data_type, &data_type, sizeof(Type));
-    memcpy(new_node->val, val, sizeof(node_data));
 
     //new_node->data_type = data_type;
     //new_node->val = val;
-    printf("New_node val address is %p, val is ", &(new_node->val));
+    /*printf("New_node val address is %p, val is ", &(new_node->val));
     print_arg(new_node);
+    printf("\n");*/
     //free(val);
 
-    printf("After memcpy ");
+    //printf("After memcpy ");
 
     //if(data_type == number) printf(" %lg ", new_node->val->number);         
     //else printf(" %c ", get_oper_symbol(new_node->val->op));
 
-    printf("\n");
+    //printf("\n");
 
 
     new_node->left  = left;
@@ -489,16 +261,16 @@ void const_calculation(Node* node, size_t* changes)
 
         switch (node->val->op)
         {
-        case add:
+        case add_op:
             node->val->number = node->left->val->number + node->right->val->number;
             break;
-        case sub:
+        case sub_op:
             node->val->number = node->left->val->number - node->right->val->number;
             break; 
-        case mul:
+        case mul_op:
             node->val->number = node->left->val->number * node->right->val->number;
             break;       
-        case divis:
+        case divis_op:
             node->val->number = node->left->val->number / node->right->val->number;
             break;        
         
@@ -524,7 +296,7 @@ void null_multiply(Node* node, size_t* changes)
 {
     if (node == NULL) return;
 
-    if ((node->data_type == operation) && (node->val->op == mul))
+    if ((node->data_type == operation) && (node->val->op == mul_op))
     {
         if ((node->left->data_type == number) && (node->left->val->number == (double)0))
         {

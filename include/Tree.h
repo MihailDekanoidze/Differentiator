@@ -33,7 +33,7 @@
                                                         node_dot_create(child, file)
 
 #define FOPEN(file_name, mode) fopen(file_name, mode); fprintf(stderr, "open: %s on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);
-#define FCLOSE(file_name) int file_close = fclose(file_name); /*fprintf(stderr, "close: %s  on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);*/ \
+#define FCLOSE(file_name) int file_close = fclose(file_name); fprintf(stderr, "close: %s  on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__); \
     if (file_close != 0) {fprintf(stderr, "meow!!\n");}
 
 
@@ -42,25 +42,26 @@ typedef struct Node Node;
 
 enum Operation
 {
-    null_operator = 0,
-    add = 1,
-    sub = 2,
-    divis = 3,
-    mul = 4
+    null_op    = 0,
+    add_op     = 1,
+    sub_op     = 2,
+    divis_op   = 3,
+    mul_op     = 4,
+    pow_op     = 15
 };
 
 enum Function
 {
-    sin_f = 5,
-    cos_f = 6,
-    null_f = 7,
-    ln_f = 8,
-    tg_f = 9,
-    ctg_f = 10,
-    sh_f = 11,
-    ch_f = 12,
-    th_f = 13,
-    cth_f =14
+    sin_f   = 5,
+    cos_f   = 6,
+    null_f  = 7,
+    ln_f    = 8,
+    tg_f    = 9,
+    ctg_f   = 10,
+    sh_f    = 11,
+    ch_f    = 12,
+    th_f    = 13,
+    cth_f   = 14
 };
 
 typedef union node_data
@@ -97,21 +98,17 @@ enum Child
 };
 
 struct Tree {
-    Node* node_list;             //rename
-    size_t node_count;
-    size_t capacity;
+    Node* root;
     FILE* tree_log;
 };
 
-Tree*               tree_create(size_t node_count);
+Tree*               tree_create(void);
 void                tree_print(const Node* tree, FILE* tree_data);
-Tree*               tree_increase_capasity(Tree* tree);
 void                tree_detor(Tree* tree);
 void                node_dtor(Node* node);
 
 Node*               tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void* arg);
 
-void                node_list_print(Tree* main_tree);
 void                skip_spaces(char* source, size_t* pos);
 void                skip_alpha(char* source, size_t* pos);
 void                ClearBuffer(void);
