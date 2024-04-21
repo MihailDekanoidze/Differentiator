@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>
+#include <math.h>
 #include <ctype.h>
 #include "./include/InputText.h"
 #include "./include/Tree.h"
@@ -12,13 +13,8 @@ printf("Expected symbol is %c, but curr_symbol is %c(%d)\n", exp_symbol, curr_sy
 #define FUNC_LEN 4
 #define CONSTANT_LEN 2
 
-VAL_FILLING(Operation, op, val->op = op);
-//VAL_FILLING(double,  number, val->number = number);
-VAL_FILLING(Function, func, val->func = func);
-VAL_FILLING(char, var, val->var = var);
 
-
-void syntax_error(void)
+void parser_syntax_error(void)
 {
     fprintf(stderr, "Syntax error\n");
 }
@@ -27,54 +23,82 @@ Node* get_G(char* str)
 {
     char* S = str;
 
+    #ifdef  DEBUG_ON                                                
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, *S);
+    #endif
 
     Node* node = get_E(&S);
-
     if (*S == '$') {S++;} 
     else REQUIRE('$', *S);
-
     return node;
 }
 
 Node* get_N(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
-
-    const char* old_str = *S;
+    #endif
 
     double val = 0;
+    Node* node = NULL;
 
-    while((**S >= '0') && (**S <= '9')) 
+    if(!sscanf(*S, "%lg", &val)) 
     {
-        val = val * 10 + (**S - '0');
-        (*S)++;
+        val = get_C(S);
+        if (isnan(val))
+        {
+            char variable = **S;
+            (*S)++;
+            return _VAR(variable);
+        } 
     }
-    Node* node = _NUM(val);
 
-    if (old_str == *S) node->val->number = get_C(S);
-    if (old_str == *S) syntax_error();
-    
+    int point = 0;
+    while (isdigit(**S) || (**S == '.'))
+    {
+        if (**S == '.')
+        {
+            if (!point) point++;
+            else
+            {
+                printf("Wrong number is %s\n", *S);
+                return NULL;
+            }
+        }
+        (*S)++;
+    } 
+    node = _NUM(val);
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
+
     return node;
 }
 
 Node* get_E(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
-
+    #endif
+    
     Node* node1 = NULL;
-
     node1 = get_T(S);
 
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
     while ((**S == '+') || (**S == '-'))
     {
         char op = **S;
         (*S)++;
 
         Node* node2 = get_T(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
 
-        if (op == '+') return (_ADD(node1, node2));
-        else           return (_SUB(node1, node2));
+        if (op == '+') node1 = _ADD(node1, node2);
+        else           node1 = _SUB(node1, node2);
     }
 
     return node1;
@@ -82,9 +106,14 @@ Node* get_E(char** S)
 
 Node* get_T(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
     
     Node* node1 = get_F(S);
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
     while ((**S == '*') || (**S == '/'))
     {
@@ -92,9 +121,12 @@ Node* get_T(char** S)
         (*S)++;
 
         Node* node2 = get_F(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
 
-        if (op == '*') return (_MUL(node1, node2));
-        else           return (_DIV(node1, node2));
+        if (op == '*') node1 = _MUL(node1, node2);
+        else           node1 = _DIV(node1, node2);
     }
 
     return node1;
@@ -102,8 +134,9 @@ Node* get_T(char** S)
 
 Node* get_P(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
-
+    #endif
     Node* node = NULL;
 
     if (**S != '(') node = get_N(S);
@@ -111,17 +144,25 @@ Node* get_P(char** S)
     {
         (*S)++;
         node = get_E(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
 
         if (**S != ')') REQUIRE(')', **S);
         (*S)++;
     }
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
     return node;
 }
 
 Node* get_F(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
     Node* node = NULL; 
     char * old_str = *S;
@@ -129,6 +170,9 @@ Node* get_F(char** S)
     if (!isalpha(**S))
     {
         node = get_D(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
         return node;
     }
 
@@ -142,6 +186,9 @@ Node* get_F(char** S)
     func_str[pos] = '\0';
 
     Function function = get_funct_code(func_str);
+    printf("funct scaned is ");
+    print_func(stdout, function);
+    printf("\n");
     free(func_str);
 
     if (function == null_f)
@@ -191,78 +238,41 @@ Node* get_F(char** S)
     return node;
 }
 
-Function get_funct_code(char* source)
-{
-    if (strncmp(source, "cos", 3) == 0)
-    {
-        source += 3;
-        return cos_f;
-    }
-    if (strncmp(source, "sin", 3) == 0) 
-    {
-        source += 3;
-        return sin_f;
-    }
-    if (strncmp(source, "tg",  2) == 0)
-    {
-        source += 2;
-        return tg_f;
-    }
-    if (strncmp(source, "ctg",  3) == 0)
-    {
-        source += 3;
-        return ctg_f;
-    }
-    if (strncmp(source, "sh",  2) == 0)
-    {
-        source += 2;
-        return sh_f;
-    }
-    if (strncmp(source, "ch",  2) == 0)
-    {
-        source += 2;
-        return ch_f;
-    }
-    if (strncmp(source, "th",  2) == 0)
-    {
-        source += 2;
-        return th_f;
-    }
-    if (strncmp(source, "cth",  3) == 0)
-    {
-        source += 3;
-        return cth_f;
-    }
-    if (strncmp(source, "ln",  2) == 0)
-    {
-        source += 2;
-        return ln_f;
-    }
-    else
-    {
-        return null_f;
-    }
-}
+
 
 double get_C(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
     double val = 0;
 
     size_t pos = 0;
     char* constant = (char*)calloc(CONSTANT_LEN + 1, sizeof(char));
+
+    char* old_str = *S;
     while (isalpha(**S))
-    {
+    { 
         constant[pos++] = **S;
-        S++;
+        (*S)++;
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
+
     }
 
     constant[pos] = '\0';
 
     val = get_constant(constant);
-
     free(constant);
+    printf("Isnan val = %d\n", isnan(val));
+    if(isnan(val))
+    {   
+        *S = old_str;
+        return NAN;
+    }
+
 
     printf("Constant is %lg\n", val);
     return val;
@@ -289,14 +299,22 @@ double get_constant(char* source)
 
 Node* get_D(char** S)
 {
+    #ifdef  DEBUG_ON
     printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
-    Node* node1 = get_P(S);
+    Node* node1 = get_M(S);
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
     while (**S == '^')
     {
         S++;
-        Node* node2 = get_P(S);
+        Node* node2 = get_M(S);
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
         node1 = _POW(node1, node2);
     }
@@ -304,7 +322,34 @@ Node* get_D(char** S)
     return node1;
 }
 
+Node* get_M(char** S)
+{
+    #ifdef  DEBUG_ON
+    printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+    #endif
 
+    Node* node1 = NULL;
+    if (**S != '-')
+    {
+        node1 = get_P(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
+    }
+    else
+    {
+        (*S)++;
+        Node* node2 = get_P(S);
+        #ifdef  DEBUG_ON
+        printf("%s, symbol is %c\n", __PRETTY_FUNCTION__, **S);
+        #endif
+
+        node1 = _NUM(-1);
+        node1 = _MUL(node1, node2);
+    }
+
+    return node1;
+}
 // add mono -
 // add var
 

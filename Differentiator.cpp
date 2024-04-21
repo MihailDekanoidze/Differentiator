@@ -3,68 +3,50 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
-
+#include <math.h>
 #include "./include/Tree.h"
 #include "./include/InputText.h"
 #include "./Differentiator.h"
+#include "./include/ExtraFunctions.h"
 
 
-int file_read(const char* file_name, Tree* tree)
+Errors file_read(const char* file_name, Tree* tree)
 {
+    //printf("I am in file read\n");
+    Errors file_error = NO_ERROR;
     FILE* input_file = fopen(file_name, "rb");
+    if (!input_file) file_error = NO_DEFINED_FILE; 
+    ERROR_CHECK(file_error, fclose(input_file), ("<<FILE %s does not exist>>\n",file_name));
+    
+    text_info* file_buffer = text_info_ctor();
+    file_error = input_text(input_file, sizeof(char), file_buffer);
 
-    if (!input_file)
-    {
-        printf("File %s was not found\n", file_name);
-        return 1;
-    }
-
-    TextInfo* file_buffer = (TextInfo*) calloc(1, sizeof(TextInfo));
-    InputText(file_buffer, input_file);
+    charprint(file_buffer);
+    ERROR_CHECK(file_error, fclose(input_file), ("Can not read text\n"));
     fclose(input_file);
-
-    assert(tree);
-    assert(tree->root == NULL);
 
     tree->root = get_G((char*)(file_buffer)->buffer);
 
-    TextInfoDtor(file_buffer);
-    return 0;
+    text_info_dtor(file_buffer);
+    return NO_ERROR;
 }
 
-void file_write(const char* file_name, Node* root)
+Errors file_write(const char* file_name, Node* root)
 {
-    FILE* output_tree = fopen(file_name, "w+");
-
+    Errors write_error = NO_ERROR;
+    if(!root) write_error = NULL_PTR;
+    ERROR_CHECK(write_error, , ("Root is nullptr\n"));
     //printf("I plan to print tree to the file %s\n", file_name);
-    tree_print(root, output_tree);
 
+    FILE* output_tree = fopen(file_name, "w");
+    //printf("output_tree is null = %d\n", output_tree == NULL);
+    if (!output_tree) write_error = OPEN_FILE;
+    ERROR_CHECK(write_error, fclose(output_tree), ("Can not open file %s\n", file_name));
+
+    tree_print(root, output_tree);
     fclose(output_tree);
 
-    return;
-}
-
-
-Operation get_oper_code(char* source)
-{
-    //printf("symbol is %c\n", *source);
-    //printf("int of symbol is %d\n", (int)(*source));
-
-    switch ((int)(*source))
-    {
-    case '+':
-        return add_op;
-    case '-':
-        return sub_op;
-    case '*':
-        return mul_op;
-    case '/':
-        return divis_op;
-    default:
-        break;
-    }
-
-    return null_op;
+    return NO_ERROR;
 }
 
 size_t nsymbol_in_str(char* source, char symbol)
@@ -81,15 +63,30 @@ size_t nsymbol_in_str(char* source, char symbol)
 node_data* val_double(double data)         
 {              
     union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
-    //memcpy(&(val->number), &data, sizeof(double));    
     val->number = data;   
-
-    //printf("I am crete a new node_data to address %p, val is %lg\n", &val, val->number);
-
     return val;                                                         
 }
 
+node_data* val_Operation(Operation op)         
+{              
+    union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
+    val->op = op;
+    return val;                                                         
+}
 
+node_data* val_Function(Function func)         
+{              
+    union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
+    val->func = func;
+    return val;                                                         
+}
+
+node_data* val_char(char var)         
+{              
+    union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
+    val->var = var;
+    return val;                                                         
+}
 
 Node* diff_the_tree(const Node* node)
 {
@@ -97,45 +94,41 @@ Node* diff_the_tree(const Node* node)
     print_arg(node);
     printf("\n");
 
-    printf("left is null = %d\n", node->left == NULL);
-    printf("right is null = %d\n", node->right == NULL);
+    printf("left is null = %d\n", L == NULL);
+    printf("right is null = %d\n", R == NULL);
 
-    if(node->left != NULL)
-        print_arg(node->left);
+    if(L != NULL)
+        print_arg(L);
 
-    if(node->right != NULL)
-        print_arg(node->right);
+    if(R != NULL)
+        print_arg(R);
 
-    switch (node->data_type)
+    switch (ND)
     {
     case number:
-        {
-            node_data* Number = val_double(0);
-            Node* new_node = create_node(number, Number, NULL, NULL);
-            free(Number);
-
-            return new_node;
-        }
+        return _NUM(0);
     case var:
-        {
-            node_data* Number = val_double(1);
-            Node* new_node = create_node(number, Number, NULL, NULL);
-            free(Number);
-
-            return new_node;
-        }  
+        return _NUM(1); 
     case operation:{
-        switch (node->val->op)
+        switch (NV->op)
         {
         case add_op:
+            return _ADD(DL, DR);
         case sub_op:
-            return create_node(operation, node->val, DL, DR);
+            return _SUB(DL, DR);
         case mul_op:
-            {
                 return _ADD(_MUL(DL, CR), _MUL(CL, DR));
-            }
         case divis_op:
                 return _DIV(_SUB(_MUL(DL, CR), _MUL(CL, DR)), _MUL(CR, CR));
+        case pow_op:
+        {
+            if((LD == number) && (RD != number)) return _MUL(_MUL(CL, _LN(L)), DR);
+            if((LD != number) && (RD == number)) return _MUL(_MUL(L, _POW(CL, _NUM(NLVN - 1))), DL);
+            if((LD != number) && (RD != number)) return _MUL(_POW(CL, CR), _ADD(_MUL(DR, _LN(CL)), _MUL(_DIV(CR, CL), DL)));
+            printf("Op pow has 2 number arguments!\n");
+            return CN;
+        }
+//                return _MUL(_MUL(_SUB(CR, _NUM(1)), _POW(CL, _SUB(CR, _NUM(1)))), D);
         case null_op:
         default:
             printf("Unxepected operation\n");
@@ -144,19 +137,27 @@ Node* diff_the_tree(const Node* node)
     }
     case func:
     {
-        switch (node->val->func)
+        switch (NV->func)
         {
         case sin_f:
             return _MUL(_COS(CR), DR);
         case cos_f:
-            {
-                node_data* Number = val_double(-1);
-                Node* num_node = create_node(number, Number, NULL, NULL);
-                Node* new_node =  _MUL(num_node, _MUL(_SIN(CR), DR)); ;
-                free(Number);
-                return new_node;
-            }
-        case null_f:       
+                return  _MUL(_NUM(-1), _MUL(_SIN(CR), DR));
+        case sh_f:
+            return _MUL(_CH(CR), DR);
+        case ch_f:
+            return _MUL(_SH(CR), DR);
+        case tg_f:
+            return _MUL(_DIV(_NUM(1), _MUL(_COS(CR), _COS(CR))), DR);
+        case ctg_f:
+            return _MUL(_DIV(_NUM(-1), _MUL(_SIN(CR), _SIN(CR))), DR);
+        case th_f:
+            return _MUL(_DIV(_NUM(1), _MUL(_CH(CR), _CH(CR))), DR);
+        case cth_f:
+            return _MUL(_DIV(_NUM(-1), _MUL(_SH(CR), _SH(CR))), DR);
+        case ln_f:
+            return _MUL(_DIV(_NUM(1), CR), DR);
+        case null_f:         
         default:
             printf("Unxepected function\n");
             return NULL;
@@ -180,24 +181,25 @@ Node* copy_tree(const Node* node)
     Node* copy_node = (Node*)calloc(1, sizeof(Node));
     copy_node->val = (node_data*)calloc(1, sizeof(node_data));
 
-    printf("node val address is %p, val is ", &(node->val));
+    printf("node val address is %p, val is ", &(NV));
     print_arg(node);
     printf("\n");
 
-    memcpy(&copy_node->data_type, &node->data_type, sizeof(Type));
-    memcpy(copy_node->val, node->val, sizeof(node_data));
+    memcpy(&copy_node->data_type, &ND, sizeof(Type));
+    memcpy(copy_node->val, NV, sizeof(node_data));
 
-    /*copy_node->data_type = node->data_type;
-    copy_node->val = node->val;*/
+    /*copy_node->data_type = ND;
+    copy_node->val = NV;*/
 
-    copy_node->left  = copy_tree(node->left);
-    copy_node->right = copy_tree(node->right);
+    copy_node->left  = copy_tree(L);
+    copy_node->right = copy_tree(R);
 
     return copy_node;
 }
 
 Node* create_node(Type data_type, node_data* val, Node* left, Node* right)
 {
+
     Node* new_node = (Node*) calloc(1, sizeof(Node));
     new_node->val = val;
     new_node->data_type = data_type;
@@ -214,7 +216,7 @@ Node* create_node(Type data_type, node_data* val, Node* left, Node* right)
 
     //printf("After memcpy ");
 
-    //if(data_type == number) printf(" %lg ", new_node->val->number);         
+    //if(data_type == number) printf(" %lg ", new_NVN);         
     //else printf(" %c ", get_oper_symbol(new_node->val->op));
 
     //printf("\n");
@@ -226,105 +228,129 @@ Node* create_node(Type data_type, node_data* val, Node* left, Node* right)
     return new_node;   
 }
 
-void const_calculation(Node* node, size_t* changes)
+int const_calculation(Node* node, size_t* changes)
 {
-    int var_found = 0;
+    int nan_found = 0;
 
-    if ((node->left == NULL) && (node->right == NULL))
+    if (N == NULL)  return OBJECT_N_FOUND;
+    printf("const calc in node ");
+    print_arg(node);
+    printf("\n");
+    if (ND == var) return OBJECT_FOUND;
+    if ((L == NULL) && (R == NULL)) return OBJECT_N_FOUND;
+
+    nan_found |= const_calculation(L, changes);
+    nan_found |= const_calculation(R, changes);
+
+    if ((nan_found & OBJECT_FOUND) || (ND != operation)) return OBJECT_FOUND;
+
+    if (ND == operation)
     {
-        return;
-    }
-
-    if ((node->data_type == operation) || (node->data_type == func))
-    {
-        var_found = var_search(node->left); 
-        if (var_found == OBJECT_FOUND)
-        {
-            const_calculation(node->left, changes);
-        }
-
-        var_found |= var_search(node->left);
-        if (var_found == OBJECT_FOUND)
-        {
-            const_calculation(node->right, changes);
-        }
-    } 
-
-    if (var_found == OBJECT_FOUND)
-    {
-        return;
-    }
-
-    if (node->data_type == operation)
-    {
-        node->data_type = number;
-
-        switch (node->val->op)
+        switch (NV->op)
         {
         case add_op:
-            node->val->number = node->left->val->number + node->right->val->number;
+            NVN = NLVN + NRVN;
             break;
         case sub_op:
-            node->val->number = node->left->val->number - node->right->val->number;
+            NVN = NLVN - NRVN;
             break; 
         case mul_op:
-            node->val->number = node->left->val->number * node->right->val->number;
+            NVN = NLVN * NRVN;
             break;       
         case divis_op:
-            node->val->number = node->left->val->number / node->right->val->number;
+            NVN = NLVN / NRVN;
             break;        
-        
+        case pow_op:
+            NVN = pow(NLVN, NRVN);
+            break;
+        case null_op:
         default:
             printf("Unknown operation\n");
             break;
         }
+        ND = number;
 
-        node_dtor(node->left);
-        node_dtor(node->right);
+        node_dtor_all(L);
+        node_dtor_all(R);
 
-        node->left =  NULL;
-        node->right = NULL;
+        L =  NULL;
+        R = NULL;
 
         (*changes)++;
     }
-
-    return;
+    return OBJECT_N_FOUND;
 }
 
 
-void null_multiply(Node* node, size_t* changes)
+void action_with_zero(Node* node, size_t* changes)
 {
     if (node == NULL) return;
 
-    if ((node->data_type == operation) && (node->val->op == mul_op))
+    action_with_zero(L, changes);
+    action_with_zero(R, changes);
+
+    if ((ND == operation) && (NV->op == mul_op))
     {
-        if ((node->left->data_type == number) && (node->left->val->number == (double)0))
+        if ((L->data_type == number) && (CmpDbl(NLVN, (double)0)))
         {
-            node_dtor(node->right);
-            node_dtor(node->left);
+            node_dtor_all(R);
+            node_dtor_all(L);
 
             (*changes)++;
 
-            node->data_type = number;
-            node->val->number = (double)0;
+            ND = number;
+            NVN = (double)0;
 
-            node->left =  NULL;
-            node->right = NULL;
+            L =  NULL;
+            R = NULL;
 
             return;
         }
-        if ((node->right->data_type == number) && (node->right->val->number == (double)0))
+        if ((R->data_type == number) && (CmpDbl(NRVN, (double)0)))
         {
-            node_dtor(node->left);
-            node_dtor(node->right);
+            node_dtor_all(L);
+            node_dtor_all(R);
 
             (*changes)++;
 
-            node->data_type = number;
-            node->val->number = (double)0;
+            ND = number;
+            NVN = (double)0;
 
-            node->left =  NULL;
-            node->right = NULL;
+            L =  NULL;
+            R = NULL;
+
+            return;
+        }
+    }
+    else if ((ND == operation) && (NV->op == pow_op))
+    {
+        if ((L->data_type == number) && (CmpDbl(NLVN, (double)0)))
+        {
+            node_dtor_all(R);
+            node_dtor_all(L);
+
+            (*changes)++;
+
+            ND = number;
+            NVN = (double)0;
+
+            L =  NULL;
+            R = NULL;
+
+            return;
+        }
+        if ((R->data_type == number) && (CmpDbl(NRVN, (double)0)))
+        {
+            node_dtor_all(L);
+            node_dtor_all(R);
+
+            (*changes)++;
+
+            ND = number;
+            NVN = (double)1;
+
+            L =  NULL;
+            R = NULL;
 
             return;
         }
@@ -333,30 +359,102 @@ void null_multiply(Node* node, size_t* changes)
     return;
 }
 
-
-
-int var_search(Node* curr_node)
+void action_with_one(Node* node, size_t* changes)
 {
-    if (curr_node == NULL) return OBJECT_N_FOUND;
+    if (node == NULL) return;
+
+    action_with_one(L, changes);
+    action_with_one(R, changes);
+
+    if ((ND == operation) && (NV->op == mul_op))
+    {
+        if ((L->data_type == number) && (CmpDbl(NLVN, (double)1)))
+        {
+            Node* old_R = R;
+            node_dtor_one(N, right);
+            (*changes)++;
+
+            return;
+        }
+        if ((R->data_type == number) && (CmpDbl(NRVN, (double)1)))
+        {
+            Node* old_L = L;
+            node_dtor_one(N, left);
+            (*changes)++;
+
+            return;
+        }
+    }
+    else if ((ND == operation) && (NV->op == pow_op))
+    {
+        if ((L->data_type == number) && (CmpDbl(NLVN, (double)1)))
+        {
+            node_dtor_all(R);
+            node_dtor_all(L);
+
+            (*changes)++;
+
+            ND = number;
+            NVN = (double)1;
+
+            L =  NULL;
+            R = NULL;
+
+            return;
+        }
+        if ((R->data_type == number) && (CmpDbl(NRVN, (double)1)))
+        {
+            Node* old_L = L;
+            node_dtor_one(N, left);
+            (*changes)++;
+
+            return;
+        }
+    }
+    return;
+}
+
+
+
+int nan_search(Node* node)
+{
+    if (N == NULL) return OBJECT_N_FOUND;
 
     printf("Curr node is ");
-    print_arg(curr_node);
+    print_arg(N);
     printf("\n");
 
-    if (curr_node->data_type == var)
+    if ((ND == var) || (ND == func))
     {
         return OBJECT_FOUND;
     }
 
-    int var_found = var_search(curr_node->left) | var_search(curr_node->right);
+    int nan_found = nan_search(L) | nan_search(R);
 
     printf("For node ");
-    print_arg(curr_node);
-    printf(" var_found = %d\n", var_found);
+    print_arg(N);
+    printf(" nan_found = %d\n", nan_found);
 
-    if (var_found & OBJECT_FOUND)
+    if (nan_found & OBJECT_FOUND)
     {
         return OBJECT_FOUND;
     }
     return OBJECT_N_FOUND;
+}
+
+void tree_optimize(Node* node)
+{
+    size_t changes = 1;
+
+    while (changes != 0)
+    {
+        changes = 0;
+        const_calculation(node, &changes);
+        action_with_zero(node, &changes);
+        action_with_one(node, &changes);
+
+        printf("After opt cycle\n");
+        tree_print(node, stdout);
+        printf("\n");
+    }
 }

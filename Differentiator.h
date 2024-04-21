@@ -2,12 +2,23 @@
 #define DIFFERENTIATOR_H
 
 #include <stdio.h>
+#include "./include/CommonIncludes.h"
+#include "./include/Token.h"
 #include "./include/Tree.h"
+#include "./include/DSL.h"
+
+#define DEBUG_ON
+
+#define PROGRAMM_FINISH                 \
+        tree_detor(main_tree);          \
+        node_dtor_all(diff_tree);       \
+        return 0;           
 
 #define PRINT_ARG(curr_node) if(curr_node->data_type == number) printf(" %lg \n", curr_node->val->number);         \
                         else printf(" %c \n", get_oper_symbol(curr_node->val->op))
 
 #define _NUM(num) create_node(number, val_double(num), NULL, NULL)
+#define _VAR(variable) create_node(var, val_char(variable), NULL, NULL)
 
 #define _ADD(left_node, right_node) create_node(operation, Add,   left_node, right_node)
 #define _SUB(left_node, right_node) create_node(operation, Sub,   left_node, right_node)
@@ -25,41 +36,49 @@
 #define _CTH(right_node) create_node(func, Cth, NULL, right_node)
 #define  _LN(right_node) create_node(func, Ln,  NULL, right_node)
 
+#define T_NUM(num) create_token(number, num)
+#define T_VAR(variab) create_token(var, variab)
 
+#define T_ADD create_token(Operation, Add)
+#define T_SUB create_token(Operation, Sub)
+#define T_MUL create_token(Operation, Mul)
+#define T_DIV create_token(Operation, Div)
+#define T_POW create_token(Operation, Pow)
+
+#define T_SIN create_token(Function, Sin)
+#define T_COS create_token(Function, Cos)
+#define  T_TG create_token(Function, Tg)
+#define T_CTG create_token(Function, Ctg)
+#define  T_SH create_token(Function, Sh)
+#define  T_CH create_token(Function, Ch)
+#define  T_TH create_token(Function, Th)
+#define T_CTH create_token(Function, Cth)
+#define  T_LN create_token(Function, Ln)
 
 #define DL diff_the_tree(node->left)
 #define DR diff_the_tree(node->right)
-
+#define CN copy_tree(node)
 #define CL copy_tree(node->left)
 #define CR copy_tree(node->right)
 
 
-#define VAL_FILLING(type, data, key) node_data* val_##type(type data)                                   \
-{                                                                                                       \
-    union node_data* val = (node_data*)calloc(1, sizeof(node_data));                                    \
-    key;                                                                                                \
-    /*printf("I am crete a new node_data to address %p, val is %c\n", &val, get_oper_symbol(val->op));*/\  
-                                                                                                        \
-    return val;                                                                                         \
-}
+
+Errors      file_read           (const char* file_name, Tree* tree);
+Errors      file_write          (const char* file_name, Node* root);
 
 
+size_t      nsymbol_in_str      (char* source, char symbol);
+Token*      create_token        (Token_type data_type, node_data* val);
 
+Node*       diff_the_tree       (const Node* node);
+Node*       create_node         (Type, node_data*, Node*, Node*);
+Node*       copy_tree           (const Node*);
 
-int file_read (const char* file_name, Tree* tree);
-void file_write(const char* file_name, Node* root);
-
-Operation get_oper_code(char* source);
-Function get_funct_code(char* func);
-size_t nsymbol_in_str(char* source, char symbol);
-
-Node* diff_the_tree(const Node* node);
-Node* create_node(Type, node_data*, Node*, Node*);
-Node* copy_tree(const Node*);
-
-int var_search(Node* curr_node);
-void const_calculation(Node* node, size_t* changes);
-
+int        nan_search           (Node* curr_node);
+int        const_calculation    (Node* node, size_t* changes);
+void       action_with_zero     (Node* node, size_t* changes);
+void       action_with_one      (Node* node, size_t* changes);
+void       tree_optimize        (Node* node);
 
 void       syntax_error(void);
 Node*      get_G(char* str);
@@ -71,39 +90,40 @@ double     get_C(char** S);
 Node*      get_F(char** S);
 double     get_constant(char* source);
 Node*      get_D(char** S);
+Node*      get_M(char** S);
 
-
-double     get_G(const char* str, double var);
-double     get_N(void);
-double     get_E(void);
-double     get_T(void);
-double     get_P(void);
-double     get_C(void);
-double     get_F(void);
-double     get_D(void);
+double     calc_get_G(const char* str, double var);
+double     calc_get_N(void);
+double     calc_get_E(void);
+double     calc_get_T(void);
+double     calc_get_P(void);
+double     calc_get_C(void);
+double     calc_get_F(void);
+double     calc_get_D(void);
 
 node_data* val_double           (double);
 node_data* val_Operation        (Operation);
 node_data* val_char             (char); 
-node_data* val_Function         (Function); 
+node_data* val_Function         (Function);
+
+int        Calculation(void);
+void       parser_syntax_error(void);
 
 
-#define Null        val_Operation(null_op)                                      // in main filling or use constructor
-#define Add         val_Operation(add_op)
-#define Sub         val_Operation(sub_op)     //array with funct node_datas
-#define Mul         val_Operation(mul_op)
-#define Div         val_Operation(divis_op)
-#define Pow         val_Operation(pow_op)
-#define Sin         val_Function(sin_f)
-#define Cos         val_Function(cos_f)
-#define Tg          val_Function(tg_f)
-#define Ctg         val_Function(ctg_f)
-#define Sh          val_Function(sh_f)
-#define Ch          val_Function(ch_f)
-#define Th          val_Function(th_f)
-#define Cth         val_Function(cth_f)     
-#define Ln          val_Function(ln_f)
-
-
+#define Null val_Operation(null_op)    // in main filling or use constructor
+#define Add  val_Operation(add_op)
+#define Sub  val_Operation(sub_op)     //array with funct node_datas
+#define Mul  val_Operation(mul_op)
+#define Div  val_Operation(divis_op)
+#define Pow  val_Operation(pow_op)
+#define Sin  val_Function(sin_f)
+#define Cos  val_Function(cos_f)
+#define Tg   val_Function(tg_f)
+#define Ctg  val_Function(ctg_f)
+#define Sh   val_Function(sh_f)
+#define Ch   val_Function(ch_f)
+#define Th   val_Function(th_f)
+#define Cth  val_Function(cth_f)     
+#define Ln   val_Function(ln_f)
 
 #endif

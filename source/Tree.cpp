@@ -7,11 +7,9 @@
 #include "../include/Stack.h"
 #include "../include/others.h"
 
-
 Tree* tree_create(void)
 {
     Tree* tree = (Tree*)calloc(1, sizeof(Tree));
-
     assert(tree);
 
     tree->root = NULL;
@@ -20,7 +18,7 @@ Tree* tree_create(void)
     tree->root->right = NULL;
     tree->root->previous = NULL;*/
 
-    FILE* tree_log = FOPEN("tree_log.cpp", "w+");
+    FILE* tree_log = fopen("tree_log.txt", "w");
     tree->tree_log = tree_log;
 
     assert(tree);
@@ -28,24 +26,26 @@ Tree* tree_create(void)
     return tree;
 }
 
-
-
 void tree_detor(Tree* tree)
 {
-    node_dtor(tree->root);
+    node_dtor_all(tree->root);
     
-    FCLOSE(tree->tree_log);
+    fclose(tree->tree_log);
 
     free(tree);
 
-    printf("Free ends\n");
+    //printf("Free ends\n");
 }
 
 void tree_print(const Node* tree, FILE* tree_data)
 {
-    if (tree == NULL) return;
+    if (tree == NULL) 
+    {
+        printf("root null ptr\n");
+        return;
+    }
 
-    fprintf(tree_data, "(");
+    if((tree->left != NULL) && (tree->right != NULL)) fprintf(tree_data, "(");
 
     if ((tree->right == NULL) && (tree->left == NULL))
     {
@@ -53,24 +53,16 @@ void tree_print(const Node* tree, FILE* tree_data)
         {
         case number:
         {
-            //printf("I plan to write a number, val is ");
-            //print_arg(tree);
-            //printf("\n");
-
             fprintf(tree_data, "%lg", tree->val->number);
             break;
         }
         case var:
         {
-            //printf("I plan to write a var, val is ");
-            //print_arg(tree);
-            //printf("\n");
-
             fprintf(tree_data, "%c", tree->val->var);
             break;
         }
         case empty_node:
-            //printf("Empty node\n");
+            printf("Empty node\n");
         case func:
         case operation:
         default:
@@ -100,7 +92,7 @@ void tree_print(const Node* tree, FILE* tree_data)
         tree_print(tree->right, tree_data);
     }
 
-    fprintf(tree_data, ")");
+    if((tree->left != NULL) && (tree->right != NULL)) fprintf(tree_data, ")");
 }
 
 
@@ -136,7 +128,7 @@ void fprint_nchar(FILE* dest, char symbol, size_t count)
     for (size_t i = 0; i < count; i++) {fprintf(dest, "%c", symbol);}
 }
 
-Node* tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void* arg)
+Node* tree_add_node(Node* parent, Child subtree, Type tp, void* arg)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
     
@@ -229,29 +221,7 @@ void node_dot_create(Node* curr_node, FILE* tree_info)
     return;
 }*/
 
-char get_oper_symbol(Operation op)
-{
-    switch (op)
-    {
-    case add_op:
-        return '+';
-    case sub_op:
-        return '-';
-    case mul_op:
-        return '*';
-    case divis_op:
-        return '/';
-    case null_op:
-    default:
-        return '?';
-        break;
-    }
-
-    return 0;
-}
-
-
-void node_dtor(Node* node)
+void node_dtor_all(Node* node)
 {
     if (node == NULL) return;
 
@@ -261,12 +231,67 @@ void node_dtor(Node* node)
 
     free(node->val);
 
-    node_dtor(node->left);
-    node_dtor(node->right);
+    node_dtor_all(node->left);
+    node_dtor_all(node->right);
 
     free(node);
 
     return;
+}
+
+void node_dtor_one(Node* node, Child saved_child)
+{
+    if (node == NULL) return;
+    free(node->val);
+
+    Node* saved_node = NULL;
+    if (saved_child == left)
+    {
+        saved_node = node->left;
+        free(node->right->val);
+        free(node->right);
+    }
+    else    
+    {
+        saved_node = node->right;
+        free(node->left->val);
+        free(node->left);
+    }
+
+    node->data_type = saved_node->data_type;
+    node->left = saved_node->left;
+    node->right = saved_node->right;    
+    node->val = saved_node->val;
+
+    free(saved_node);
+
+    return;
+}
+
+Operation get_oper_code(char* source)
+{
+    for (size_t i = 0; i < OPERATION_COUNT; i++)
+        if (*source == op_info[i].symbol) return op_info[i].op;
+
+    printf("Expected unknown func\n");
+    return null_op;
+}
+Function get_funct_code(char* source)
+{
+    for (size_t i = 0; i < FUNCTION_COUNT; i++)
+        if (!strncmp(funct_info[i].name, source, strlen(funct_info[i].name))) return funct_info[i].function;
+    
+    printf("Expected unknown func\n");
+    return null_f;
+}
+
+char get_oper_symbol(Operation op)
+{
+    for (size_t i = 0; i < OPERATION_COUNT; i++)
+        if (op == op_info[i].op) return op_info[i].symbol;
+    
+    printf("Expected unknown func\n");
+    return 0;
 }
 
 void print_arg(const Node* curr_node)
@@ -299,16 +324,31 @@ void print_func(FILE* dest, Function func)
     switch (func)
     {
     case sin_f:
-        fprintf(dest, "SIN");
+        fprintf(dest, "sin");
         break;
     case cos_f:
-        fprintf(dest, "COS");
+        fprintf(dest, "cos");
         break;
     case ln_f:
-        fprintf(dest, "LN");
+        fprintf(dest, "ln");
         break;
     case tg_f:
-        fprintf(dest, "TG");
+        fprintf(dest, "tg");
+        break;
+    case ctg_f:
+        fprintf(dest, "ctg");
+        break;
+    case sh_f:
+        fprintf(dest, "sh");
+        break;
+    case ch_f:
+        fprintf(dest, "ch");
+        break;
+    case th_f:
+        fprintf(dest, "th");
+        break;
+    case cth_f:
+        fprintf(dest, "cth");
         break;
     case null_f:
     default:

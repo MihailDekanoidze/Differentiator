@@ -4,12 +4,8 @@
 #include <malloc.h>
 #include "../include/Stack.h"
 
-
-
-
 const char* stack_errors_message[] = 
 {
-
 "No errors\n",
 "Out of memory for calloc\n",
 "Out of memory for realloc\n",
@@ -22,9 +18,7 @@ const char* stack_errors_message[] =
 "Damaged data left canary\n",
 "Damaged data right canary\n",
 "Poison in data\n"
-
 };
-
 
 StackError StackPrint(struct Stack *st)
 {
@@ -92,8 +86,6 @@ StackError StackPrint(struct Stack *st)
 
     return NO_ERRORS;
 }
-
-
 
 StackError StackCtor(Stack* st, const size_t capacity)                               
 {
@@ -192,8 +184,6 @@ StackError StackPop(struct Stack* st, elem_t* value)
     return NO_ERRORS;
 
 }
-
-
 
 void StackDtor(struct Stack* st)
 {   
@@ -314,7 +304,6 @@ int StackErrorCheck(struct Stack* st)
 StackError StackChangeCapacity(Stack* st, const size_t coef_capacity)
 {
     LOG_FUNCTION_BEGIN
-    
 
 #ifdef CANARY_ON
     size_t new_capacity = (st->capacity * coef_capacity * sizeof(elem_t) / 10UL + 2 * sizeof(CANARY));

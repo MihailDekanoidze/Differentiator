@@ -16,7 +16,8 @@ const static  unsigned int UNBROKEN_POISON_SEGMENT = UINT_MAX;
 const static  unsigned int INCREASE_COEF           = 20;
 const static  unsigned int DECREASE_COEF           = 5;
 
-                                    
+
+#define CANARY_OFF         
 
 
 #define LOG_FUNCTION_BEGIN if (st->stack_log != NULL) fprintf(st->stack_log, "Function %s in line %d in file %s begin\n", __PRETTY_FUNCTION__, __LINE__, __FILE__);

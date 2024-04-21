@@ -19,40 +19,42 @@ float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,$\
 object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,$\
 undefined,unreachable,vla-bound,vptr
 
-all: Differentiator
+ALL_FILES := $(wildcard *.cpp)
+ALL_FILES += $(wildcard ./source/*.cpp)
+SOURCES = $(filter-out Calc.cpp, $(ALL_FILES))
+OBJ_DIR = Apps
 
-Differentiator:  InputText.o Stack.o Tree.o Parser.o Differentiator.o main.o Calc.o
-		@g++ ./Apps/InputText.o ./Apps/Stack.o ./Apps/Tree.o ./Apps/Parser.o ./Apps/Differentiator.o ./Apps/main.o -o Differentiator.exe $(FLAGS)
 
-InputText.o:
-		@g++ ./source/InputText.cpp -c -o ./Apps/InputText.o $(FLAGS)
 
-Stack.o:
-		@g++ ./source/Stack.cpp -c -o ./Apps/Stack.o $(FLAGS)
+VPATH := ./:source
 
-Tree.o:
-		@g++ ./source/Tree.cpp -c -o ./Apps/Tree.o $(FLAGS)
+OBJECTS := $(addprefix $(OBJ_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(SOURCES))))
 
-Parser.o:
-		@g++ ./Parser.cpp -c -o ./Apps/Parser.o $(FLAGS)
+EXECUTABLE = differentiator
 
-Differentiator.o:
-		@g++ Differentiator.cpp -c -o ./Apps/Differentiator.o $(FLAGS)
+#
+##.PHONY: test
+#test:
+#	echo $(SOURCES)
+#
+.PHONY: all
 
-main.o:
-		@g++ main.cpp -c -o ./Apps/main.o $(FLAGS)
+all:  $(OBJECTS) $(EXECUTABLE) 
+
+$(EXECUTABLE):
+	@g++ $(OBJECTS) -o $(EXECUTABLE) $(FLAGS)
+
+
+$(OBJ_DIR)/%.o: %.cpp
+	@g++ $^ -c -o $@ $(FLAGS)
+
+.PHONY: clean
 
 clean:
-		./Apps rm -rf *.o
+	rm -rf ./$(OBJ_DIR)/*.o
+	rm $(EXECUTABLE)
+	clear
+
 
 run:
-		./Differentiator.exe
-
-image:
-		dot tree.dot -T png -o tree.png\
-
-Calc.o:
-		@g++ ./Apps/InputText.o Calc.cpp -o Calc.exe $(FLAGS)
-
-calc:
-		./Calc.exe
+	./$(EXECUTABLE)

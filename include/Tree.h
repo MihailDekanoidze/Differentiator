@@ -19,9 +19,11 @@
 #define STR_LEN         100
 #define OBJECT_FOUND    1 << 7
 #define OBJECT_N_FOUND  1 << 8
-#define RUS_CHAR_SIZE   sizeof('ф')
+#define RUS_CHAR_SIZE   sizeof('а')
 #define OPERATIONS_AND_FUNCTIONS_COUNT 7
 #define TREE_CALLOC_ERROR  NULL;
+#define OPERATION_COUNT 6
+#define FUNCTION_COUNT 10
 
 #define TREE_PRINT(node_list, file)     size_t level = 0;                                    \
                                         tree_print(node_list, file, &level)
@@ -34,7 +36,7 @@
 
 #define FOPEN(file_name, mode) fopen(file_name, mode); fprintf(stderr, "open: %s on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);
 #define FCLOSE(file_name) int file_close = fclose(file_name); fprintf(stderr, "close: %s  on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__); \
-    if (file_close != 0) {fprintf(stderr, "meow!!\n");}
+    if (file_close == 0) {fprintf(stderr, "meow!!\n");}
 
 
 typedef unsigned char Data;
@@ -42,26 +44,26 @@ typedef struct Node Node;
 
 enum Operation
 {
-    null_op    = 0,
-    add_op     = 1,
-    sub_op     = 2,
-    divis_op   = 3,
-    mul_op     = 4,
-    pow_op     = 15
+    null_op ,
+    add_op  ,
+    sub_op  ,
+    divis_op,
+    mul_op  ,
+    pow_op  ,
 };
 
 enum Function
 {
-    sin_f   = 5,
-    cos_f   = 6,
-    null_f  = 7,
-    ln_f    = 8,
-    tg_f    = 9,
-    ctg_f   = 10,
-    sh_f    = 11,
-    ch_f    = 12,
-    th_f    = 13,
-    cth_f   = 14
+    null_f,
+    sin_f ,
+    cos_f ,
+    ln_f  ,
+    tg_f  ,
+    ctg_f ,
+    sh_f  ,
+    ch_f  ,
+    th_f  ,
+    cth_f   
 };
 
 typedef union node_data
@@ -105,15 +107,19 @@ struct Tree {
 Tree*               tree_create(void);
 void                tree_print(const Node* tree, FILE* tree_data);
 void                tree_detor(Tree* tree);
-void                node_dtor(Node* node);
+void                node_dtor_all(Node* node);
+void                node_dtor_one(Node* node, Child);
 
-Node*               tree_add_node(Node* parent, Child subtree, Tree* curr_tree, Type tp, void* arg);
+Operation           get_oper_code       (char* source);
+Function            get_funct_code      (char* func);
+char                get_oper_symbol     (Operation);
+        
+Node*               tree_add_node(Node* parent, Child subtree, Type tp, void* arg);
 
 void                skip_spaces(char* source, size_t* pos);
 void                skip_alpha(char* source, size_t* pos);
 void                ClearBuffer(void);
 void                fprint_nchar(FILE* dest, char symbol, size_t count);
-char                get_oper_symbol(Operation);
 
 
 void                print_arg(const Node* curr_node);
@@ -125,5 +131,40 @@ void                print_func(FILE* dest, Function func);
 
 //void                graph_image(Node* start);
 //void                node_dot_create(Node* curr_node, FILE* tree_info);
+
+struct Operation_info
+{
+    Operation op;
+    const char symbol;
+};
+
+struct Function_info
+{
+    Function function;
+    const char name[10];
+}; 
+
+const Operation_info op_info[] =
+{
+    {add_op, '+'},
+    {sub_op, '-'},
+    {mul_op, '*'},
+    {divis_op, '/'},
+    {null_op, '\0'}
+}; 
+
+const Function_info funct_info[] =
+{
+    {sin_f, "sin"},
+    {cos_f, "cos"},
+    {tg_f, "tg"},
+    {ctg_f, "ctg"},
+    {null_f, ""},
+    {sh_f, "sh"},
+    {ch_f, "ch"},
+    {th_f, "th"},
+    {cth_f, "cth"},
+    {ln_f, "ln"}
+}; 
 
 #endif

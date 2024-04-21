@@ -2,21 +2,29 @@
 #include "./Differentiator.h"
 #include "./include/Tree.h"
 
-
-
 int main()
 {
     Tree* main_tree = tree_create();
-
+    Node* diff_tree = NULL; 
     assert(main_tree);
 
-    if (file_read("expression.txt", main_tree)){return 1;}
-    file_write("after_read.txt", main_tree->root);
+    Errors error = file_read("./input/expression.txt", main_tree);
+    ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
 
+    error = file_write("./output/after_read.txt", main_tree->root);
+    ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
 
-    //file_write("Test_output.txt", main_tree->root);
+    tree_optimize(main_tree->root);
+    error = file_write("./output/after_optimize.txt", main_tree->root);
+    ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
 
-    //Node* diff_tree = diff_the_tree(main_tree->root);
+    diff_tree = diff_the_tree(main_tree->root);
+    error = file_write("./output/diff_tree.txt", diff_tree);
+    ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
+
+    tree_optimize(diff_tree);
+    error = file_write("./output/diff_tree_after_opt.txt", diff_tree);
+    ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
 
     //tree_print(diff_tree, stdout);
 
@@ -32,7 +40,5 @@ int main()
     //printf("changes = %zu\n", changes);
     //file_write("after_optimisation.txt", diff_tree);
 
-    //node_dtor(diff_tree);
-
-    tree_detor(main_tree);
+    PROGRAMM_FINISH;
 }

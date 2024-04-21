@@ -14,7 +14,7 @@ printf("Expected symbol is %c, but curr_symbol is %c(%d)\n", exp_symbol, curr_sy
 
 const char* S = NULL;
 
-int main()
+int Calculation()
 {
     FILE* source = fopen("expression.txt", "rb");
 
@@ -27,11 +27,13 @@ int main()
     TextInfo* expression = (TextInfo*)calloc(1, sizeof(TextInfo)); 
     InputText(expression, source);
 
-    double val = get_G((char*)expression->buffer, 1);
+    double val = calc_get_G((char*)expression->buffer, 1);
 
     printf("Val = %lg\n", val);
 
     TextInfoDtor(expression);
+
+    return 1;
 }
 
 void syntax_error(void)
@@ -39,13 +41,13 @@ void syntax_error(void)
     fprintf(stderr, "Syntax error\n");
 }
 
-double get_G(const char* str, double var)
+double calc_get_G(const char* str, double var)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
     
     S = str;
 
-    double val = get_E();
+    double val = calc_get_E();
 
     if (*S == '$') {S++;} 
     else REQUIRE('$', *S);
@@ -53,7 +55,7 @@ double get_G(const char* str, double var)
     return val;
 }
 
-double get_N(void)
+double calc_get_N(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
@@ -67,26 +69,26 @@ double get_N(void)
         S++;
     }
 
-    if (old_str == S) val = get_C();
+    if (old_str == S) val = calc_get_C();
     if (old_str == S) syntax_error();
 
     return val;
 }
 
-double get_E(void)
+double calc_get_E(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
     double val = 0;
 
-    val = get_T();
+    val = calc_get_T();
 
     while ((*S == '+') || (*S == '-'))
     {
         char op = *S;
         S++;
 
-        double val2 = get_T();
+        double val2 = calc_get_T();
 
         if (op == '+') val += val2;
         else           val -= val2;
@@ -95,18 +97,18 @@ double get_E(void)
     return val;
 }
 
-double get_T(void)
+double calc_get_T(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
-    double val = get_F();
+    double val = calc_get_F();
 
     while ((*S == '*') || (*S == '/'))
     {
         char op = *S;
         S++;
 
-        double val2 = get_F();
+        double val2 = calc_get_F();
 
         if (op == '*') val *= val2;
         else           val /= val2;
@@ -115,17 +117,17 @@ double get_T(void)
     return val;
 }
 
-double get_P(void)
+double calc_get_P(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
     double val = 0;
 
-    if (*S != '(') val = get_N();
+    if (*S != '(') val = calc_get_N();
     else
     {
         S++;
-        val = get_E();
+        val = calc_get_E();
 
         if (*S != ')') REQUIRE(')', *S);
         S++;
@@ -134,7 +136,7 @@ double get_P(void)
     return val;
 }
 
-double get_F(void)
+double calc_get_F(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
@@ -143,7 +145,7 @@ double get_F(void)
 
     if (!isalpha(*S))
     {
-        val = get_D();
+        val = calc_get_D();
 
         printf("%s\n", __PRETTY_FUNCTION__);
         return val;
@@ -164,11 +166,11 @@ double get_F(void)
     if (function == null_f)
     {
         S = old_str;
-        val = get_D();
+        val = calc_get_D();
         return val;
     }
 
-    double arg = get_D();
+    double arg = calc_get_D();
 
     switch (function)
     {
@@ -208,60 +210,8 @@ double get_F(void)
     return val;
 }
 
-Function get_funct_code(char* source)
-{
-    if (strncmp(source, "cos", 3) == 0)
-    {
-        source += 3;
-        return cos_f;
-    }
-    if (strncmp(source, "sin", 3) == 0) 
-    {
-        source += 3;
-        return sin_f;
-    }
-    if (strncmp(source, "tg",  2) == 0)
-    {
-        source += 2;
-        return tg_f;
-    }
-    if (strncmp(source, "ctg",  2) == 0)
-    {
-        source += 3;
-        return ctg_f;
-    }
-    if (strncmp(source, "sh",  2) == 0)
-    {
-        source += 2;
-        return sh_f;
-    }
-    if (strncmp(source, "ch",  2) == 0)
-    {
-        source += 2;
-        return ch_f;
-    }
-    if (strncmp(source, "th",  2) == 0)
-    {
-        source += 2;
-        return th_f;
-    }
-    if (strncmp(source, "cth",  2) == 0)
-    {
-        source += 3;
-        return cth_f;
-    }
-    if (strncmp(source, "ln",  2) == 0)
-    {
-        source += 2;
-        return ln_f;
-    }
-    else
-    {
-        return null_f;
-    }
-}
 
-double get_C(void)
+double calc_get_C(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
@@ -284,7 +234,7 @@ double get_C(void)
     return val;
 }
 
-double get_constant(char* source)
+double calc_get_constant(char* source)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
@@ -305,16 +255,16 @@ double get_constant(char* source)
     }
 }
 
-double get_D(void)
+double calc_get_D(void)
 {
     printf("%s\n", __PRETTY_FUNCTION__);
 
-    double val = get_P();
+    double val = calc_get_P();
 
     while (*S == '^')
     {
         S++;
-        double val2 = get_P();
+        double val2 = calc_get_P();
 
         val = pow(val, val2);
     }
