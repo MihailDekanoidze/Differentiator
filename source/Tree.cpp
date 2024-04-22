@@ -58,7 +58,7 @@ void tree_print(const Node* tree, FILE* tree_data)
         }
         case var:
         {
-            fprintf(tree_data, "%c", tree->val->var);
+            fprintf(tree_data, "%s", tree->val->var);
             break;
         }
         case empty_node:
@@ -273,14 +273,23 @@ Operation get_oper_code(char* source)
     for (size_t i = 0; i < OPERATION_COUNT; i++)
         if (*source == op_info[i].symbol) return op_info[i].op;
 
-    printf("Expected unknown func\n");
+    printf("Expected unknown oper\n");
     return null_op;
 }
 Function get_funct_code(char* source)
 {
     for (size_t i = 0; i < FUNCTION_COUNT; i++)
+    {
+        printf("compare between example <<%s>> and <<", funct_info[i].name);
+        for (size_t j  = 0; j < strlen(funct_info[i].name); j++)
+        {
+            printf("%c", *(source + j));
+        }    
+        printf(">>\n");
         if (!strncmp(funct_info[i].name, source, strlen(funct_info[i].name))) return funct_info[i].function;
-    
+
+    }
+        
     printf("Expected unknown func\n");
     return null_f;
 }
@@ -302,7 +311,7 @@ void print_arg(const Node* curr_node)
         printf(" #%lg# ", curr_node->val->number);
         break;
     case var:
-        printf(" #%c# ", curr_node->val->var);
+        printf(" #%s# ", curr_node->val->var);
         break;
     case operation:
         printf(" %c ", get_oper_symbol(curr_node->val->op));
@@ -321,6 +330,7 @@ void print_arg(const Node* curr_node)
 
 void print_func(FILE* dest, Function func)
 {
+    printf("print_funct get %d\n", func);
     switch (func)
     {
     case sin_f:
@@ -355,4 +365,13 @@ void print_func(FILE* dest, Function func)
         printf("Unknown function\n");
         break;
     }
+}
+
+const char* get_funct_name(Function funct)
+{
+    for (size_t i = 0; i < FUNCTION_COUNT; i++)
+        if ((const Function)funct == op_info[i].op) return funct_info[i].name;
+    
+    printf("Expected unknown func\n");
+    return 0;
 }

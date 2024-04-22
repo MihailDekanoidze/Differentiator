@@ -18,7 +18,7 @@
                         else printf(" %c \n", get_oper_symbol(curr_node->val->op))
 
 #define _NUM(num) create_node(number, val_double(num), NULL, NULL)
-#define _VAR(variable) create_node(var, val_char(variable), NULL, NULL)
+#define _VAR(variable) create_node(var, val_var(variable), NULL, NULL)
 
 #define _ADD(left_node, right_node) create_node(operation, Add,   left_node, right_node)
 #define _SUB(left_node, right_node) create_node(operation, Sub,   left_node, right_node)
@@ -103,7 +103,7 @@ double     calc_get_D(void);
 
 node_data* val_double           (double);
 node_data* val_Operation        (Operation);
-node_data* val_char             (char); 
+node_data* val_var              (char*); 
 node_data* val_Function         (Function);
 
 int        Calculation(void);

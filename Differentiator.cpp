@@ -25,7 +25,14 @@ Errors file_read(const char* file_name, Tree* tree)
     ERROR_CHECK(file_error, fclose(input_file), ("Can not read text\n"));
     fclose(input_file);
 
-    tree->root = get_G((char*)(file_buffer)->buffer);
+
+    // Tokenize DEBUG
+
+    text_info* token_array = expression_tokenize(file_buffer);
+    token_array_print((Token*)(token_array->buffer));
+    token_array_dtor(token_array);
+
+    //tree->root = get_G((char*)(file_buffer)->buffer);
 
     text_info_dtor(file_buffer);
     return NO_ERROR;
@@ -81,7 +88,7 @@ node_data* val_Function(Function func)
     return val;                                                         
 }
 
-node_data* val_char(char var)         
+node_data* val_var(char* var)         
 {              
     union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
     val->var = var;
@@ -370,7 +377,6 @@ void action_with_one(Node* node, size_t* changes)
     {
         if ((L->data_type == number) && (CmpDbl(NLVN, (double)1)))
         {
-            Node* old_R = R;
             node_dtor_one(N, right);
             (*changes)++;
 
@@ -378,7 +384,6 @@ void action_with_one(Node* node, size_t* changes)
         }
         if ((R->data_type == number) && (CmpDbl(NRVN, (double)1)))
         {
-            Node* old_L = L;
             node_dtor_one(N, left);
             (*changes)++;
 
@@ -404,7 +409,6 @@ void action_with_one(Node* node, size_t* changes)
         }
         if ((R->data_type == number) && (CmpDbl(NRVN, (double)1)))
         {
-            Node* old_L = L;
             node_dtor_one(N, left);
             (*changes)++;
 

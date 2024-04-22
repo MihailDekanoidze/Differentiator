@@ -22,8 +22,9 @@
 #define RUS_CHAR_SIZE   sizeof('а')
 #define OPERATIONS_AND_FUNCTIONS_COUNT 7
 #define TREE_CALLOC_ERROR  NULL;
-#define OPERATION_COUNT 6
+#define OPERATION_COUNT 5
 #define FUNCTION_COUNT 10
+#define BASE_VAR_LEN   5
 
 #define TREE_PRINT(node_list, file)     size_t level = 0;                                    \
                                         tree_print(node_list, file, &level)
@@ -68,7 +69,7 @@ enum Function
 
 typedef union node_data
 {
-    char var;
+    char* var;
     Operation op;
     double number;
     Function func;
@@ -113,6 +114,7 @@ void                node_dtor_one(Node* node, Child);
 Operation           get_oper_code       (char* source);
 Function            get_funct_code      (char* func);
 char                get_oper_symbol     (Operation);
+const char*         get_funct_name      (Function funct);
         
 Node*               tree_add_node(Node* parent, Child subtree, Type tp, void* arg);
 
@@ -150,6 +152,7 @@ const Operation_info op_info[] =
     {sub_op, '-'},
     {mul_op, '*'},
     {divis_op, '/'},
+    {pow_op, '^'},
     {null_op, '\0'}
 }; 
 

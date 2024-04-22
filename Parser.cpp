@@ -49,7 +49,7 @@ Node* get_N(char** S)
         {
             char variable = **S;
             (*S)++;
-            return _VAR(variable);
+            return _VAR(&variable);
         } 
     }
 
