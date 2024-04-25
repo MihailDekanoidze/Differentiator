@@ -30,9 +30,9 @@ Errors file_read(const char* file_name, Tree* tree)
 
     text_info* token_array = expression_tokenize(file_buffer);
     token_array_print((Token*)(token_array->buffer));
-    token_array_dtor(token_array);
 
-    //tree->root = get_G((char*)(file_buffer)->buffer);
+    tree->root = get_G((Token*)(token_array->buffer));
+    token_array_dtor(token_array);
 
     text_info_dtor(file_buffer);
     return NO_ERROR;
@@ -98,17 +98,17 @@ node_data* val_var(char* var)
 Node* diff_the_tree(const Node* node)
 {
     ClearBuffer();
-    print_arg(node);
+    fprint_arg(stdout, node);
     printf("\n");
 
     printf("left is null = %d\n", L == NULL);
     printf("right is null = %d\n", R == NULL);
 
     if(L != NULL)
-        print_arg(L);
+        fprint_arg(stdout, L);
 
     if(R != NULL)
-        print_arg(R);
+        fprint_arg(stdout, R);
 
     switch (ND)
     {
@@ -188,9 +188,9 @@ Node* copy_tree(const Node* node)
     Node* copy_node = (Node*)calloc(1, sizeof(Node));
     copy_node->val = (node_data*)calloc(1, sizeof(node_data));
 
-    printf("node val address is %p, val is ", &(NV));
+    /*printf("node val address is %p, val is ", &(NV));
     print_arg(node);
-    printf("\n");
+    printf("\n");*/
 
     memcpy(&copy_node->data_type, &ND, sizeof(Type));
     memcpy(copy_node->val, NV, sizeof(node_data));
@@ -240,9 +240,10 @@ int const_calculation(Node* node, size_t* changes)
     int nan_found = 0;
 
     if (N == NULL)  return OBJECT_N_FOUND;
-    printf("const calc in node ");
-    print_arg(node);
-    printf("\n");
+    /*printf("const calc in node ");
+    fprint_arg(node);
+    printf("\n");*/
+
     if (ND == var) return OBJECT_FOUND;
     if ((L == NULL) && (R == NULL)) return OBJECT_N_FOUND;
 
@@ -424,9 +425,9 @@ int nan_search(Node* node)
 {
     if (N == NULL) return OBJECT_N_FOUND;
 
-    printf("Curr node is ");
-    print_arg(N);
-    printf("\n");
+    /*printf("Curr node is ");
+    fprint_arg(N);
+    printf("\n");*/
 
     if ((ND == var) || (ND == func))
     {
@@ -435,9 +436,9 @@ int nan_search(Node* node)
 
     int nan_found = nan_search(L) | nan_search(R);
 
-    printf("For node ");
+    /*printf("For node ");
     print_arg(N);
-    printf(" nan_found = %d\n", nan_found);
+    printf(" nan_found = %d\n", nan_found);*/
 
     if (nan_found & OBJECT_FOUND)
     {

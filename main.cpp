@@ -10,10 +10,10 @@ int main()
 
     Errors error = file_read("./input/expression.txt", main_tree);
     ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
-    PROGRAMM_FINISH;
 
     error = file_write("./output/after_read.txt", main_tree->root);
     ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
+    PROGRAMM_FINISH;
 
     tree_optimize(main_tree->root);
     error = file_write("./output/after_optimize.txt", main_tree->root);

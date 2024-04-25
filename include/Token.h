@@ -1,9 +1,19 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include "./Colors.h"
 #include "./CommonIncludes.h"
 #include "./Tree.h"
 #include "./InputText.h"
+
+
+
+#define CURR_TOKEN_PRINT(token)             \
+    getchar();                              \
+    printf("Curr token is ");               \
+    print_token_arg(token);                 \
+    printf(" %s\n", __PRETTY_FUNCTION__);
+
 
 enum Token_type 
 {

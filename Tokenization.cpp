@@ -184,7 +184,7 @@ void print_token_arg(const Token* token)
         printf(" %c ", get_oper_symbol(token->val->op));
         break;
     case t_func:
-        print_func(stdout, token->val->func);
+        fprint_func(stdout, token->val->func);
         break;
     case t_empty:
         printf("Empty token\n");

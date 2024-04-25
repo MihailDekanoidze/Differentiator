@@ -80,7 +80,7 @@ void tree_print(const Node* tree, FILE* tree_data)
             fprintf(tree_data, "%c", get_oper_symbol(tree->val->op));
             break;
         case func:
-            print_func(tree_data, tree->val->func);
+            fprint_func(tree_data, tree->val->func);
         case var:
         case number:
         case empty_node:
@@ -189,7 +189,7 @@ Node* tree_add_node(Node* parent, Child subtree, Type tp, void* arg)
     }
 }*/
 
-/*void graph_image(Node* start)
+void graph_image(Node* start)
 {
     FILE* tree_info = FOPEN("tree.dot", "w");
 
@@ -211,7 +211,9 @@ void node_dot_create(Node* curr_node, FILE* tree_info)
 {
     if ((curr_node->left == NULL) && (curr_node->right == NULL))
     {
-        fprintf(tree_info, "->\"%s\";\n", curr_node->val);
+        fprintf(tree_info, "\"");                        
+        fprint_arg(tree_info, curr_node);                     
+        fprintf(tree_info, "\"");
         return;
     }
 
@@ -219,15 +221,11 @@ void node_dot_create(Node* curr_node, FILE* tree_info)
     START_NODE_CHILD_PRINT(tree_info, curr_node, curr_node->right);
 
     return;
-}*/
+}
 
 void node_dtor_all(Node* node)
 {
     if (node == NULL) return;
-
-    printf("I plan to clean val ");
-    print_arg(node);
-    printf("\n");
 
     free(node->val);
 
@@ -303,34 +301,34 @@ char get_oper_symbol(Operation op)
     return 0;
 }
 
-void print_arg(const Node* curr_node)
+void fprint_arg(FILE* dest, const Node* curr_node)
 {
     switch (curr_node->data_type)
     {                                       
     case number:
-        printf(" #%lg# ", curr_node->val->number);
+        fprintf(dest, " #%lg# ", curr_node->val->number);
         break;
     case var:
-        printf(" #%s# ", curr_node->val->var);
+        fprintf(dest, " #%s# ", curr_node->val->var);
         break;
     case operation:
-        printf(" %c ", get_oper_symbol(curr_node->val->op));
+        fprintf(dest, " %c ", get_oper_symbol(curr_node->val->op));
         break;
     case func:
-        print_func(stdout, curr_node->val->func);
+        fprint_func(dest, curr_node->val->func);
         break;
     case empty_node:
-        printf("Empty node\n");
+        fprintf(dest, "Empty node\n");
         break;
     default:
-        printf("Unknown type <%lln>\n", (long long*)(curr_node->val));
+        fprintf(dest, "Unknown type <%lln>\n", (long long*)(curr_node->val));
         break;
     }
 }
 
-void print_func(FILE* dest, Function func)
+void fprint_func(FILE* dest, Function func)
 {
-    printf("print_funct get %d\n", func);
+    //printf("print_funct get %d\n", func);
     switch (func)
     {
     case sin_f:

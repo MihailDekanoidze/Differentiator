@@ -30,9 +30,14 @@
                                         tree_print(node_list, file, &level)
 
 
-#define NODE_CHILD_PRINT(file, node, child)             fprintf(file, "->\"%s\"", node->val);         \
-                                                        node_dot_create(child, file)
-#define START_NODE_CHILD_PRINT(file, node, child)       fprintf(file, "\"%s\"", node->val);         \
+#define NODE_CHILD_PRINT(file, node, child)             fprintf(file, "->\"");                      \
+                                                        fprint_arg(file, node);                     \
+                                                        fprintf(file, "\"");                        \
+                                                        node_dot_create(child, file)                
+
+#define START_NODE_CHILD_PRINT(file, node, child)       fprintf(file, "\"");                        \
+                                                        fprint_arg(file, node);                     \
+                                                        fprintf(file, "\"");                        \
                                                         node_dot_create(child, file)
 
 #define FOPEN(file_name, mode) fopen(file_name, mode); fprintf(stderr, "open: %s on line: %d %s\n", #file_name, __LINE__, __PRETTY_FUNCTION__);
@@ -124,15 +129,15 @@ void                ClearBuffer(void);
 void                fprint_nchar(FILE* dest, char symbol, size_t count);
 
 
-void                print_arg(const Node* curr_node);
-void                print_func(FILE* dest, Function func);
+void                fprint_arg(FILE* dest, const Node* curr_node);
+void                fprint_func(FILE* dest, Function func);
 
 
 //struct Stack*       way_stack(Tree* tree, char* val);
 //int                 way_search(Node* curr_node, double val, struct Stack* way_to_obj);
 
-//void                graph_image(Node* start);
-//void                node_dot_create(Node* curr_node, FILE* tree_info);
+void                graph_image(Node* start);
+void                node_dot_create(Node* curr_node, FILE* tree_info);
 
 struct Operation_info
 {

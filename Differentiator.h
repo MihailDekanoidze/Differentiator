@@ -6,6 +6,7 @@
 #include "./include/Token.h"
 #include "./include/Tree.h"
 #include "./include/DSL.h"
+#include "./include/Colors.h"
 
 #define DEBUG_ON
 
@@ -81,16 +82,16 @@ void       action_with_one      (Node* node, size_t* changes);
 void       tree_optimize        (Node* node);
 
 void       syntax_error(void);
-Node*      get_G(char* str);
-Node*      get_N(char** S);
-Node*      get_E(char** S);
-Node*      get_T(char** S);
-Node*      get_P(char** S);
-double     get_C(char** S);
-Node*      get_F(char** S);
+Node*      get_G(Token* token_array);
+Node*      get_N(Token** token);
+Node*      get_E(Token** token);
+Node*      get_T(Token** token);
+Node*      get_P(Token** token);
+double     get_C(Token** token);
+Node*      get_F(Token** token);
 double     get_constant(char* source);
-Node*      get_D(char** S);
-Node*      get_M(char** S);
+Node*      get_D(Token** token);
+Node*      get_M(Token** token);
 
 double     calc_get_G(const char* str, double var);
 double     calc_get_N(void);
