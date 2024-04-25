@@ -37,22 +37,23 @@ void tree_detor(Tree* tree)
     //printf("Free ends\n");
 }
 
-void tree_print(const Node* tree, FILE* tree_data)
+void node_print(const Node* tree, FILE* tree_data)
 {
-    if (tree == NULL) 
-    {
-        printf("root null ptr\n");
-        return;
-    }
+    if(!tree) return;
 
     if((tree->left != NULL) && (tree->right != NULL)) fprintf(tree_data, "(");
-
     if ((tree->right == NULL) && (tree->left == NULL))
     {
         switch(tree->data_type)
         {
         case number:
         {
+            if (tree->val->number < 0) 
+            {
+                fprintf(tree_data, "(%lg)", tree->val->number);
+                break;
+            }
+
             fprintf(tree_data, "%lg", tree->val->number);
             break;
         }
@@ -72,7 +73,7 @@ void tree_print(const Node* tree, FILE* tree_data)
     else
     {
         //printf("\nleft print\n");
-        tree_print(tree->left, tree_data);
+        node_print(tree->left, tree_data);
 
         switch (tree->data_type)
         {
@@ -89,7 +90,7 @@ void tree_print(const Node* tree, FILE* tree_data)
         }
     
         //printf("\nright print\n");
-        tree_print(tree->right, tree_data);
+        node_print(tree->right, tree_data);
     }
 
     if((tree->left != NULL) && (tree->right != NULL)) fprintf(tree_data, ")");
@@ -368,7 +369,7 @@ void fprint_func(FILE* dest, Function func)
 const char* get_funct_name(Function funct)
 {
     for (size_t i = 0; i < FUNCTION_COUNT; i++)
-        if ((const Function)funct == op_info[i].op) return funct_info[i].name;
+        if ((const Function)funct == funct_info[i].function) return funct_info[i].name;
     
     printf("Expected unknown func\n");
     return 0;

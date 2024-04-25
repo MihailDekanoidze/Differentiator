@@ -50,7 +50,7 @@ Errors file_write(const char* file_name, Node* root)
     if (!output_tree) write_error = OPEN_FILE;
     ERROR_CHECK(write_error, fclose(output_tree), ("Can not open file %s\n", file_name));
 
-    tree_print(root, output_tree);
+    node_print(root, output_tree);
     fclose(output_tree);
 
     return NO_ERROR;
@@ -459,7 +459,7 @@ void tree_optimize(Node* node)
         action_with_one(node, &changes);
 
         printf("After opt cycle\n");
-        tree_print(node, stdout);
+        node_print(node, stdout);
         printf("\n");
     }
 }

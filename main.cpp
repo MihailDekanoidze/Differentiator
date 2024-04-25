@@ -13,11 +13,11 @@ int main()
 
     error = file_write("./output/after_read.txt", main_tree->root);
     ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
-    PROGRAMM_FINISH;
 
     tree_optimize(main_tree->root);
     error = file_write("./output/after_optimize.txt", main_tree->root);
     ERROR_CHECK(error, PROGRAMM_FINISH, ("Cannot processed file\n"));
+    PROGRAMM_FINISH;
 
     diff_tree = diff_the_tree(main_tree->root);
     error = file_write("./output/diff_tree.txt", diff_tree);

@@ -111,7 +111,7 @@ struct Tree {
 };
 
 Tree*               tree_create(void);
-void                tree_print(const Node* tree, FILE* tree_data);
+void                node_print(const Node* tree, FILE* tree_data);
 void                tree_detor(Tree* tree);
 void                node_dtor_all(Node* node);
 void                node_dtor_one(Node* node, Child);
@@ -165,14 +165,14 @@ const Function_info funct_info[] =
 {
     {sin_f, "sin"},
     {cos_f, "cos"},
+    {ln_f, "ln"},
     {tg_f, "tg"},
     {ctg_f, "ctg"},
-    {null_f, ""},
     {sh_f, "sh"},
     {ch_f, "ch"},
     {th_f, "th"},
     {cth_f, "cth"},
-    {ln_f, "ln"}
+    {null_f, ""},
 }; 
 
 #endif

@@ -27,13 +27,16 @@ void parser_syntax_error(void)
 
 Node* get_G(Token* token)
 {
-    #ifdef  DEBUG_ON                                           
-    printf("Curr token is ");
-    print_token_arg(token);
-    printf(" %s\n", __PRETTY_FUNCTION__);
+    #ifdef  DEBUG_ON
+    CURR_TOKEN_PRINT(token);
     #endif
 
     Node* node = get_E(&token);
+
+    #ifdef  DEBUG_ON
+    CURR_TOKEN_PRINT(token);
+    #endif
+    
     if (token->token_type == t_end) {token++;} 
     else {REQUIRE('$', token);}
     return node;
@@ -46,7 +49,7 @@ Node* get_E(Token** token)
     #endif
     
     Node* node1 = NULL;
-    node1 = get_T(token);
+    node1 = get_M(token);
 
     #ifdef  DEBUG_ON
     CURR_TOKEN_PRINT(*token);
@@ -57,10 +60,37 @@ Node* get_E(Token** token)
         Operation op = (*token)->val->op;
         (*token)++;
         
-        Node* node2 = get_T(token);
+        Node* node2 = get_M(token);
 
         if (op == add_op) node1 = _ADD(node1, node2);
         else              node1 = _SUB(node1, node2);
+    }
+
+    return node1;
+}
+
+Node* get_M(Token** token)
+{
+    #ifdef  DEBUG_ON
+    CURR_TOKEN_PRINT(*token);
+    #endif
+
+    Node* node1 = NULL;
+    if (((*token)->token_type == t_op) && ((*token)->val->op == sub_op))
+    {
+        (*token)++;
+        Node* node2 = get_T(token);
+
+        #ifdef  DEBUG_ON
+        CURR_TOKEN_PRINT(*token);
+        #endif
+
+        node1 = _NUM(-1);
+        node1 = _MUL(node1, node2);
+    }
+    else
+    {
+        node1 = get_T(token);
     }
 
     return node1;
@@ -206,8 +236,6 @@ Node* get_P(Token** token)
     return node;
 }
 
-
-
 Node* get_N(Token** token)
 {
     #ifdef  DEBUG_ON
@@ -275,33 +303,9 @@ Node* get_N(Token** token)
 
 
 
-Node* get_M(Token** token)
-{
-    #ifdef  DEBUG_ON
-    CURR_TOKEN_PRINT(*token);
-    #endif
 
-    Node* node1 = NULL;
-    if (((*token)->token_type == t_op) && ((*token)->val->op == sub_op))
-    {
-        (*token)++;
-        Node* node2 = get_E(token);
-
-        #ifdef  DEBUG_ON
-        CURR_TOKEN_PRINT(*token);
-        #endif
-
-        node1 = _NUM(-1);
-        node1 = _MUL(node1, node2);
-    }
-    else
-    {
-        node1 = get_P(token);
-    }
-
-    return node1;
-}
 // add mono -
 // add var
 
 // 2^2^3 = 256 == 2^(2^3)
+// -3*2 == -(3*2)
