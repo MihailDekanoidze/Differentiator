@@ -20,7 +20,6 @@ text_info* expression_tokenize(text_info* expression)
     do
     {      
         token_data* val = (token_data*)calloc(1, sizeof(node_data));
-        printf("the processed symbol is %c\n", *data);
         size_t offset = 0;
         skip_spaces(data, &offset);
         data += offset;
@@ -54,7 +53,11 @@ text_info* expression_tokenize(text_info* expression)
             else
             {
                 funct = get_funct_code(data);
+
+                #ifdef DEBUG_ON
                 printf("func = %d\n", funct);
+                #endif
+
                 if (funct)
                 {
                     token_type = t_func;
@@ -75,7 +78,10 @@ text_info* expression_tokenize(text_info* expression)
                         double num = 0;
                         if (sscanf(data, "%lg", &num))
                         {
+                            #ifdef DEBUG_ON
                             printf("number is %lg\n", num);
+                            #endif
+
                             val->number = num;
                             int point = 0;
                             while (isdigit(*data) || (*data == '.'))
@@ -92,15 +98,20 @@ text_info* expression_tokenize(text_info* expression)
                                 data++;
                             }
                         }
-                        else printf("Unknown token is %c\nRemained str is %s\n", *data, data);
+                        else {printf("Unknown token is %c\nRemained str is %s\n", *data, data);}
                     }
                 }  
             }   
         }
         (tokens + i)->token_type = token_type;
         (tokens + i)->val= val;
+
+        #ifdef DEBUG_ON
         print_token_arg(tokens + i);
         printf("\n");
+        #endif
+        
+
         i++;
     }   while(token_type != t_end);
     token_array->elemcount = i;
@@ -206,7 +217,7 @@ void token_array_dtor(text_info* tokens)
     for (size_t i = 0; i < tokens->elemcount; i++)
     {
         Token* curr_token = ((Token*)(tokens->buffer) + i);
-        if ((const Token_type)curr_token->token_type == t_var) free(curr_token->val->var);
+        if (curr_token->token_type == t_var) free(curr_token->val->var);
         free(curr_token->val);
     }
     text_info_dtor(tokens);

@@ -34,7 +34,6 @@ void tree_detor(Tree* tree)
 
     free(tree);
 
-    //printf("Free ends\n");
 }
 
 void node_print(const Node* tree, FILE* tree_data)
@@ -59,7 +58,7 @@ void node_print(const Node* tree, FILE* tree_data)
         }
         case var:
         {
-            fprintf(tree_data, "%s", tree->val->var);
+            fprintf(tree_data, "%s", (tree->val->var));
             break;
         }
         case empty_node:
@@ -171,25 +170,6 @@ Node* tree_add_node(Node* parent, Child subtree, Type tp, void* arg)
     return new_node;
 }
 
-
-/*struct Stack* way_stack(Tree* tree, double val)
-{
-    Stack* way_to_obj = (Stack*) calloc (1, sizeof(Stack));
-
-    StackCtor(way_to_obj, DEFAULT_CAPACITY);
-
-    if (way_search(tree->node_list, val, way_to_obj) == OBJECT_N_FOUND)
-    {
-        StackDtor(way_to_obj);
-        free(way_to_obj);
-        return NULL;
-    }
-    else
-    {
-        return way_to_obj;
-    }
-}*/
-
 void graph_image(Node* start)
 {
     FILE* tree_info = FOPEN("tree.dot", "w");
@@ -228,6 +208,7 @@ void node_dtor_all(Node* node)
 {
     if (node == NULL) return;
 
+    if (node->data_type == var) free (node->val->var);
     free(node->val);
 
     node_dtor_all(node->left);
@@ -272,24 +253,17 @@ Operation get_oper_code(char* source)
     for (size_t i = 0; i < OPERATION_COUNT; i++)
         if (*source == op_info[i].symbol) return op_info[i].op;
 
-    printf("Expected unknown oper\n");
+    //printf("Expected unknown oper\n");
     return null_op;
 }
 Function get_funct_code(char* source)
 {
     for (size_t i = 0; i < FUNCTION_COUNT; i++)
     {
-        printf("compare between example <<%s>> and <<", funct_info[i].name);
-        for (size_t j  = 0; j < strlen(funct_info[i].name); j++)
-        {
-            printf("%c", *(source + j));
-        }    
-        printf(">>\n");
         if (!strncmp(funct_info[i].name, source, strlen(funct_info[i].name))) return funct_info[i].function;
-
     }
         
-    printf("Expected unknown func\n");
+    //printf("Expected unknown func\n");
     return null_f;
 }
 
@@ -298,7 +272,7 @@ char get_oper_symbol(Operation op)
     for (size_t i = 0; i < OPERATION_COUNT; i++)
         if (op == op_info[i].op) return op_info[i].symbol;
     
-    printf("Expected unknown func\n");
+    //printf("Expected unknown oper\n");
     return 0;
 }
 
@@ -359,6 +333,9 @@ void fprint_func(FILE* dest, Function func)
     case cth_f:
         fprintf(dest, "cth");
         break;
+    case exp_f:
+        fprintf(dest, "exp");
+        break;
     case null_f:
     default:
         printf("Unknown function\n");
@@ -369,8 +346,8 @@ void fprint_func(FILE* dest, Function func)
 const char* get_funct_name(Function funct)
 {
     for (size_t i = 0; i < FUNCTION_COUNT; i++)
-        if ((const Function)funct == funct_info[i].function) return funct_info[i].name;
+        if (funct == funct_info[i].function) return funct_info[i].name;
     
-    printf("Expected unknown func\n");
+    //printf("Expected unknown func\n");
     return 0;
 }

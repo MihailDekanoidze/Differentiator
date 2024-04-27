@@ -69,7 +69,8 @@ enum Function
     sh_f  ,
     ch_f  ,
     th_f  ,
-    cth_f   
+    cth_f ,
+    exp_f   
 };
 
 typedef union node_data
@@ -172,6 +173,7 @@ const Function_info funct_info[] =
     {ch_f, "ch"},
     {th_f, "th"},
     {cth_f, "cth"},
+    {exp_f, "exp"},
     {null_f, ""},
 }; 
 

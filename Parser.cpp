@@ -197,6 +197,9 @@ Node* get_F(Token** token)
             case ln_f:
                 node = _LN(arg);
                 break;
+            case exp_f:
+                node = _EXP(arg);
+                break;
             case null_f:
             default:
                 printf("Wrong func!\n");
@@ -207,7 +210,6 @@ Node* get_F(Token** token)
 
     return node;
 }
-
 
 Node* get_P(Token** token)
 {
@@ -241,65 +243,40 @@ Node* get_N(Token** token)
     #ifdef  DEBUG_ON
     CURR_TOKEN_PRINT(*token);
     #endif
+    Node* node = NULL;
+
+
+    if ((*token)->token_type != t_number) 
+    {
+        node = get_V(token);
+    }
+    else
+    {
+        node =_NUM(((*token)->val->number));
+        (*token)++;
+    }
+
+    return node;
+}
+
+Node* get_V(Token** token)
+{
+    #ifdef  DEBUG_ON
+    CURR_TOKEN_PRINT(*token);
+    #endif
 
     Node* node = NULL;
 
-    if ((*token)->token_type == t_number) node =_NUM(((*token)->val->number));
+    if ((*token)->token_type == t_var)
+    {
+        node = _VAR((*token)->val->var);
+    }
     else {REQUIRE('1', *token);}
 
     (*token)++;
 
     return node;
 }
-
-
-
-
-
-
-
-
-
-/*double get_C(Token** token)
-{
-    #ifdef  DEBUG_ON
-    CURR_TOKEN_PRINT(*token);
-    #endif
-
-    double val = 0;
-
-    size_t pos = 0;
-    char* constant = (char*)calloc(CONSTANT_LEN + 1, sizeof(char));
-
-    char* old_str = *S;
-    while (isalpha(**S))
-    { 
-        constant[pos++] = **S;
-        (*S)++;
-        #ifdef  DEBUG_ON
-        printf("Curr token is ");
-    print_token_arg(token);
-    printf(" %s\n", __PRETTY_FUNCTION__);
-        #endif
-
-    }
-
-    constant[pos] = '\0';
-
-    val = get_constant(constant);
-    free(constant);
-    printf("Isnan val = %d\n", isnan(val));
-    if(isnan(val))
-    {   
-        *S = old_str;
-        return NAN;
-    }
-
-
-    printf("Constant is %lg\n", val);
-    return val;
-}*/
-
 
 
 

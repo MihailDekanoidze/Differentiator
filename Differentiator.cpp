@@ -12,7 +12,6 @@
 
 Errors file_read(const char* file_name, Tree* tree)
 {
-    //printf("I am in file read\n");
     Errors file_error = NO_ERROR;
     FILE* input_file = fopen(file_name, "rb");
     if (!input_file) file_error = NO_DEFINED_FILE; 
@@ -21,15 +20,18 @@ Errors file_read(const char* file_name, Tree* tree)
     text_info* file_buffer = text_info_ctor();
     file_error = input_text(input_file, sizeof(char), file_buffer);
 
+    #ifdef DEBUG_ON
     charprint(file_buffer);
+    #endif
+
     ERROR_CHECK(file_error, fclose(input_file), ("Can not read text\n"));
     fclose(input_file);
 
-
-    // Tokenize DEBUG
-
     text_info* token_array = expression_tokenize(file_buffer);
+    
+    #ifdef DEBUG_ON
     token_array_print((Token*)(token_array->buffer));
+    #endif
 
     tree->root = get_G((Token*)(token_array->buffer));
     token_array_dtor(token_array);
@@ -43,10 +45,8 @@ Errors file_write(const char* file_name, Node* root)
     Errors write_error = NO_ERROR;
     if(!root) write_error = NULL_PTR;
     ERROR_CHECK(write_error, , ("Root is nullptr\n"));
-    //printf("I plan to print tree to the file %s\n", file_name);
 
     FILE* output_tree = fopen(file_name, "w");
-    //printf("output_tree is null = %d\n", output_tree == NULL);
     if (!output_tree) write_error = OPEN_FILE;
     ERROR_CHECK(write_error, fclose(output_tree), ("Can not open file %s\n", file_name));
 
@@ -90,13 +90,32 @@ node_data* val_Function(Function func)
 
 node_data* val_var(char* var)         
 {              
-    union node_data* val = (node_data*)calloc(1, sizeof(node_data));    
-    val->var = var;
+    if (!var) 
+    {
+        printf("var is null\n");
+        return NULL;
+    }
+
+    union node_data* val = (node_data*)calloc(1, sizeof(node_data)); 
+    val->var = (char*)calloc(strlen(var) + 1, sizeof(char));   
+    memcpy(val->var, var, strlen(var) + 1);
+
+    if(!val) 
+    {
+        printf("in val_var val is null\n");
+        return NULL;
+    }
+    else if (!(val->var)) 
+    {
+        printf("in val_var val->var is null\n");
+        return NULL;
+    }
     return val;                                                         
 }
 
 Node* diff_the_tree(const Node* node)
 {
+    #ifdef DEBUG_ON
     ClearBuffer();
     fprint_arg(stdout, node);
     printf("\n");
@@ -109,6 +128,7 @@ Node* diff_the_tree(const Node* node)
 
     if(R != NULL)
         fprint_arg(stdout, R);
+    #endif
 
     switch (ND)
     {
@@ -164,6 +184,8 @@ Node* diff_the_tree(const Node* node)
             return _MUL(_DIV(_NUM(-1), _MUL(_SH(CR), _SH(CR))), DR);
         case ln_f:
             return _MUL(_DIV(_NUM(1), CR), DR);
+        case exp_f:
+            return _MUL(_EXP(CR), DR);
         case null_f:         
         default:
             printf("Unxepected function\n");
@@ -188,15 +210,14 @@ Node* copy_tree(const Node* node)
     Node* copy_node = (Node*)calloc(1, sizeof(Node));
     copy_node->val = (node_data*)calloc(1, sizeof(node_data));
 
-    /*printf("node val address is %p, val is ", &(NV));
-    print_arg(node);
-    printf("\n");*/
-
     memcpy(&copy_node->data_type, &ND, sizeof(Type));
-    memcpy(copy_node->val, NV, sizeof(node_data));
-
-    /*copy_node->data_type = ND;
-    copy_node->val = NV;*/
+    if (node->data_type != var) memcpy(copy_node->val, NV, sizeof(node_data));
+    else
+    {
+        size_t len = strlen(node->val->var) + 1;
+        copy_node->val->var = (char*)calloc(len, sizeof(char));   
+        memcpy(copy_node->val->var, node->val->var, len);
+    }
 
     copy_node->left  = copy_tree(L);
     copy_node->right = copy_tree(R);
@@ -206,28 +227,10 @@ Node* copy_tree(const Node* node)
 
 Node* create_node(Type data_type, node_data* val, Node* left, Node* right)
 {
-
+    if (!val) {printf("node_data has null ptr\n");}
     Node* new_node = (Node*) calloc(1, sizeof(Node));
     new_node->val = val;
     new_node->data_type = data_type;
-
-    //printf("Before memcpy ");
-
-
-    //new_node->data_type = data_type;
-    //new_node->val = val;
-    /*printf("New_node val address is %p, val is ", &(new_node->val));
-    print_arg(new_node);
-    printf("\n");*/
-    //free(val);
-
-    //printf("After memcpy ");
-
-    //if(data_type == number) printf(" %lg ", new_NVN);         
-    //else printf(" %c ", get_oper_symbol(new_node->val->op));
-
-    //printf("\n");
-
 
     new_node->left  = left;
     new_node->right = right;
@@ -240,9 +243,12 @@ int const_calculation(Node* node, size_t* changes)
     int nan_found = 0;
 
     if (N == NULL)  return OBJECT_N_FOUND;
-    /*printf("const calc in node ");
+
+    #ifdef DEBUG_ON
+    printf("const calc in node ");
     fprint_arg(node);
-    printf("\n");*/
+    printf("\n");
+    #endif
 
     if (ND == var) return OBJECT_FOUND;
     if ((L == NULL) && (R == NULL)) return OBJECT_N_FOUND;
@@ -425,9 +431,11 @@ int nan_search(Node* node)
 {
     if (N == NULL) return OBJECT_N_FOUND;
 
-    /*printf("Curr node is ");
+    #ifdef DEBUG_ON
+    printf("Curr node is ");
     fprint_arg(N);
-    printf("\n");*/
+    printf("\n");
+    #endif
 
     if ((ND == var) || (ND == func))
     {
@@ -436,9 +444,11 @@ int nan_search(Node* node)
 
     int nan_found = nan_search(L) | nan_search(R);
 
-    /*printf("For node ");
+    #ifdef DEBUG_ON
+    printf("For node ");
     print_arg(N);
-    printf(" nan_found = %d\n", nan_found);*/
+    printf(" nan_found = %d\n", nan_found);
+    #endif
 
     if (nan_found & OBJECT_FOUND)
     {
@@ -458,8 +468,10 @@ void tree_optimize(Node* node)
         action_with_zero(node, &changes);
         action_with_one(node, &changes);
 
+        #ifdef DEBUG_ON
         printf("After opt cycle\n");
         node_print(node, stdout);
         printf("\n");
+        #endif
     }
 }

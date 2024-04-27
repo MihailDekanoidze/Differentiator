@@ -8,7 +8,12 @@
 #include "./include/DSL.h"
 #include "./include/Colors.h"
 
-#define DEBUG_ON
+#define DEBUG_OFF
+
+
+#define printf(...)                                         \
+        fprintf(stdout, __VA_ARGS__);                      \
+        fprintf(stdout, "%s\n", __PRETTY_FUNCTION__);
 
 #define PROGRAMM_FINISH                 \
         tree_detor(main_tree);          \
@@ -16,7 +21,7 @@
         return 0;           
 
 #define PRINT_ARG(curr_node) if(curr_node->data_type == number) printf(" %lg \n", curr_node->val->number);         \
-                        else printf(" %c \n", get_oper_symbol(curr_node->val->op))
+                                else printf(" %c \n", get_oper_symbol(curr_node->val->op))
 
 #define _NUM(num) create_node(number, val_double(num), NULL, NULL)
 #define _VAR(variable) create_node(var, val_var(variable), NULL, NULL)
@@ -36,6 +41,8 @@
 #define  _TH(right_node) create_node(func, Th,  NULL, right_node)
 #define _CTH(right_node) create_node(func, Cth, NULL, right_node)
 #define  _LN(right_node) create_node(func, Ln,  NULL, right_node)
+#define _EXP(right_node) create_node(func, Exp, NULL, right_node)
+
 
 #define T_NUM(num) create_token(number, num)
 #define T_VAR(variab) create_token(var, variab)
@@ -81,17 +88,16 @@ void       action_with_zero     (Node* node, size_t* changes);
 void       action_with_one      (Node* node, size_t* changes);
 void       tree_optimize        (Node* node);
 
-void       syntax_error(void);
-Node*      get_G(Token* token_array);
-Node*      get_N(Token** token);
-Node*      get_E(Token** token);
-Node*      get_T(Token** token);
-Node*      get_P(Token** token);
-double     get_C(Token** token);
-Node*      get_F(Token** token);
-double     get_constant(char* source);
-Node*      get_D(Token** token);
-Node*      get_M(Token** token);
+void        syntax_error(void);
+Node*       get_G(Token* token_array);
+Node*       get_N(Token** token);
+Node*       get_E(Token** token);
+Node*       get_T(Token** token);
+Node*       get_P(Token** token);
+Node*       get_F(Token** token);
+Node*       get_D(Token** token);
+Node*       get_M(Token** token);
+Node*       get_V(Token** token);
 
 double     calc_get_G(const char* str, double var);
 double     calc_get_N(void);
@@ -126,5 +132,6 @@ void       parser_syntax_error(void);
 #define Th   val_Function(th_f)
 #define Cth  val_Function(cth_f)     
 #define Ln   val_Function(ln_f)
+#define Exp  val_Function(exp_f)
 
 #endif
